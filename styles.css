@@ -349,7 +349,7 @@ html[dir=rtl] .lp-band-cta { justify-items: start }
 .rq-detail { margin-top: 8px; width: 100%; padding: 9px 12px; border: 1px solid #CFCCC4; border-radius: 8px; font: inherit }
 .rq-f.bad input:not([type=checkbox]):not([type=radio]), .rq-f.bad .chips { outline: 2px solid var(--bad); outline-offset: 3px; border-radius: 8px }
 .rq-send { display: flex; flex-wrap: wrap; align-items: center; gap: 14px; margin: 6px 0 30px } .rq-send .btn { padding: 14px 28px; font-size: 16px }
-.hp { position: absolute; left: -9999px; width: 1px; height: 1px; opacity: 0 }
+.hp { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); opacity: 0; pointer-events: none }
 .donecheck { width: 64px; height: 64px; border-radius: 50%; background: var(--ok); color: #fff; font-size: 34px; display: grid; place-items: center; margin: 0 auto 12px }
 /* PDF sheet (off-screen) */
 .rqpdf-wrap { position: fixed; left: -4000px; top: 0 }
@@ -391,3 +391,25 @@ details.issue { margin: 0 0 14px } details.issue summary { list-style: none; dis
 .lp-band-cta { justify-items: end } html[dir=rtl] .lp-band-cta { justify-items: start }
 .lp-videos { grid-template-columns: repeat(2, 1fr) } .vid video { object-fit: contain; background: #000 }
 @media (max-width: 760px) { .lp-videos { grid-template-columns: 1fr } }
+
+/* audit fixes: compact header on phones, no sideways scroll */
+html, body { overflow-x: hidden }
+.brand { min-width: 0; flex-shrink: 1 } #nav { display: flex; flex-shrink: 0 }
+@media (max-width: 560px) {
+  .top .in { gap: 6px; padding: 8px 10px }
+  .hacad { display: none } .hlogo { height: 20px; padding: 2px 5px }
+  .navbtn { font-size: 12.5px; padding: 5px 4px }
+  .langsel { max-width: 84px; font-size: 12.5px; padding: 4px 4px }
+  .lp-hero h1 { font-size: 30px } html[lang=ar] .lp-hero h1 { font-size: 30px; line-height: 1.35 } html[lang=ur] .lp-hero h1 { font-size: 27px }
+  .lp-hero-in { padding: 28px 18px 34px } .lp-cta .btn { width: 100% }
+  .lp-sec > h2 { font-size: 24px } .lp-band { padding: 24px 18px } .lp-band h2 { font-size: 22px }
+  main { padding: 16px 12px 40px }
+}
+.tabs { flex-wrap: wrap }
+@media (max-width: 560px) {
+  .top .in { flex-wrap: wrap; row-gap: 4px }
+  #nav { order: 3; width: 100%; justify-content: space-between; border-top: 1px solid #333; padding-top: 4px; overflow-x: auto }
+  .hide-sm { display: none }
+  .tabs button { padding: 7px 10px; font-size: 13px }
+  .toolbar input { min-width: 0 }
+}
