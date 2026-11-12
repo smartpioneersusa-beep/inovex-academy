@@ -10,7 +10,7 @@
     set(k, v) { try { v === null ? localStorage.removeItem('ia_' + k) : localStorage.setItem('ia_' + k, v); } catch (e) {} }
   };
   const S = {
-    lang: LANGS.indexOf(store.get('lang')) >= 0 ? store.get('lang') : guessLang(),
+    lang: LANGS.indexOf(window.IA_LANG) >= 0 ? window.IA_LANG : LANGS.indexOf(store.get('lang')) >= 0 ? store.get('lang') : guessLang(),
     token: store.get('token'), user: null, results: [], progress: [], catalog: null,
     pendingEmail: store.get('pending') || '', cache: {}, flash: null, protectedView: false
   };
@@ -64,7 +64,9 @@
     renderNav();
   }
   $('#lang').addEventListener('change', e => {
-    S.lang = e.target.value; store.set('lang', S.lang); applyLang();
+    S.lang = e.target.value; store.set('lang', S.lang);
+    if (/^\/((ar|ur|hi)\/?)?$/.test(location.pathname)) { location.href = '/' + (S.lang === 'en' ? '' : S.lang + '/') + location.hash; return; }   // each language has its own page for search engines
+    applyLang();
     if (S.token) api('setLang', { lang: S.lang }).catch(() => {});
     S.catalog = null; route();
   });
@@ -506,13 +508,13 @@
     const scoreCell = d.score !== undefined && d.score !== '' && d.score !== null
       ? `<div>Assessment score<b>${d.total ? `${d.score} / ${d.total} (${d.percent}%)` : esc(d.score)}</b></div>` : (d.company ? `<div>Company<b style="font-family:Inter,sans-serif">${esc(d.company)}</b></div>` : '<div></div>');
     off.innerHTML = `<div class="certpage" id="cp"><div class="cert"><div class="in">
-      <div class="clogos"><img src="img/inovex.png" alt=""><span>ACADEMY</span></div>
+      <div class="clogos"><img src="/img/inovex.png" alt=""><span>ACADEMY</span></div>
       <h1>${head}</h1>${local ? `<div class="tl">${esc(t('certTitle'))}</div>` : '<div class="tl">&nbsp;</div>'}
       <div style="font-size:18px;color:#444">This certifies that</div>${local ? `<div dir="${I18N[S.lang]._dir}" style="font-size:16px;color:#777">${esc(t('certBody'))}</div>` : ''}
       <div class="nm">${esc(d.name)}</div>
       <div style="font-size:18px;color:#444">${verb}</div>${local ? `<div dir="${I18N[S.lang]._dir}" style="font-size:16px;color:#777">${esc(t('certCompleted'))}</div>` : ''}
       <div class="cr">${courseLine}</div>${local ? `<div class="crl" dir="${I18N[S.lang]._dir}">${esc(d.courseTitle)}</div>` : ''}
-      <div class="partners"><span>Authorised by</span><img src="img/wagner.jpg" alt="WAGNER" class="w"><span>In association with</span><img src="img/alqemma.png" alt="Al Qemma" class="q"><b>Al Qemma Training Institute</b></div>
+      <div class="partners"><span>Authorised by</span><img src="/img/wagner.jpg" alt="WAGNER" class="w"><span>In association with</span><img src="/img/alqemma.png" alt="Al Qemma" class="q"><b>Al Qemma Training Institute</b></div>
       <div class="row">${scoreCell}<div>Date<b>${fmtDate(d.date, 'en')}</b></div>
         <div>Certificate ID<b>${esc(d.certificateId)}</b></div><div class="sig">Academy Director<br><span style="font-size:12px;color:#666">INOVEX Group LLC · Riyadh</span></div></div>
       <div style="position:absolute;left:0;right:0;bottom:16px;font-size:11px;color:#888">Verify: academy.inovex-group.com/#/cert/${esc(d.certificateId)}</div>

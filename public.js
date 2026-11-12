@@ -78,6 +78,7 @@
     bandT: L('Ready to train your team?', 'هل أنت مستعد لتدريب فريقك؟', 'کیا آپ اپنی ٹیم کی تربیت کے لیے تیار ہیں؟', 'क्या आप अपनी टीम को प्रशिक्षित करने के लिए तैयार हैं?'),
     bandD: L('Send us your training requirements and we will reply within two working days.', 'أرسل لنا متطلبات التدريب وسنرد خلال يومي عمل.', 'اپنی تربیتی ضروریات بھیجیں، ہم دو کاروباری دنوں میں جواب دیں گے۔', 'अपनी प्रशिक्षण आवश्यकताएँ भेजें, हम दो कार्य दिवसों में उत्तर देंगे।'),
     call: L('Call', 'اتصال', 'کال کریں', 'कॉल करें'),
+    faqT: L('Frequently asked questions', 'الأسئلة الشائعة', 'اکثر پوچھے گئے سوالات', 'अक्सर पूछे जाने वाले प्रश्न'),
     formats: L('Theory · Practical · Both — at INOVEX Academy or at your factory', 'نظري · عملي · كلاهما — في أكاديمية INOVEX أو في مصنعك', 'نظری · عملی · دونوں — INOVEX اکیڈمی یا آپ کی فیکٹری میں', 'सिद्धांत · व्यावहारिक · दोनों — INOVEX अकादमी या आपकी फ़ैक्टरी में')
   };
   const FIELDS = [
@@ -92,6 +93,40 @@
     ['quality', '✓', L('Quality & inspection', 'الجودة والفحص', 'کوالٹی اور معائنہ', 'गुणवत्ता और निरीक्षण')],
     ['maintenance', '⚒', L('Maintenance', 'الصيانة', 'مرمت', 'रखरखाव')],
     ['troubleshooting', '⚑', L('Troubleshooting', 'حل المشكلات', 'خرابیوں کا حل', 'समस्या निवारण')]
+  ];
+
+
+  const FAQ = [
+    [L('Who are INOVEX Academy courses for?', 'لمن صُممت دورات أكاديمية INOVEX؟', 'INOVEX اکیڈمی کے کورس کس کے لیے ہیں؟', 'INOVEX अकादमी के कोर्स किसके लिए हैं?'),
+     L('For everyone who works on a coating line: operators, technicians, maintenance and quality staff, engineers, supervisors and sales engineers in powder coating, liquid painting and enamel plants.',
+       'لكل من يعمل على خط الطلاء: المشغلون والفنيون وفرق الصيانة والجودة والمهندسون والمشرفون ومهندسو المبيعات في مصانع طلاء البودرة والطلاء السائل والمينا.',
+       'کوٹنگ لائن پر کام کرنے والے ہر فرد کے لیے: آپریٹرز، ٹیکنیشنز، مرمت اور کوالٹی عملہ، انجینئرز، سپروائزرز اور سیلز انجینئرز۔',
+       'कोटिंग लाइन पर काम करने वाले हर व्यक्ति के लिए: ऑपरेटर, तकनीशियन, रखरखाव और गुणवत्ता स्टाफ़, इंजीनियर, सुपरवाइज़र और सेल्स इंजीनियर।')],
+    [L('Where is the training delivered?', 'أين يُقدَّم التدريب؟', 'تربیت کہاں دی جاتی ہے؟', 'प्रशिक्षण कहाँ दिया जाता है?'),
+     L('At INOVEX Academy in Riyadh or at your factory anywhere in Saudi Arabia and the GCC — theory, hands-on practice on real equipment, or both.',
+       'في أكاديمية INOVEX بالرياض أو في مصنعك في أي مكان بالمملكة ودول الخليج — نظري أو عملي على معدات حقيقية أو كلاهما.',
+       'ریاض میں INOVEX اکیڈمی میں یا سعودی عرب اور خلیج میں آپ کی فیکٹری میں — نظری، اصل آلات پر عملی، یا دونوں۔',
+       'रियाद में INOVEX अकादमी में या सऊदी अरब और खाड़ी में आपकी फ़ैक्टरी में — सिद्धांत, वास्तविक उपकरणों पर अभ्यास, या दोनों।')],
+    [L('In which languages?', 'بأي لغات؟', 'کن زبانوں میں؟', 'किन भाषाओं में?'),
+     L('Classroom and on-site training in Arabic or English. The online course book, presentation and assessment are available in English, Arabic, Urdu and Hindi.',
+       'التدريب الحضوري والميداني بالعربية أو الإنجليزية، والمواد الإلكترونية (كتاب الدورة والعرض والتقييم) متاحة بالإنجليزية والعربية والأردية والهندية.',
+       'کلاس روم اور فیکٹری میں تربیت عربی یا انگریزی میں۔ آن لائن کورس بک، پریزنٹیشن اور جائزہ انگریزی، عربی، اردو اور ہندی میں۔',
+       'कक्षा और साइट पर प्रशिक्षण अरबी या अंग्रेज़ी में। ऑनलाइन कोर्स बुक, प्रस्तुति और मूल्यांकन अंग्रेज़ी, अरबी, उर्दू और हिन्दी में।')],
+    [L('How do trainees get access to the online courses?', 'كيف يحصل المتدربون على الدورات الإلكترونية؟', 'ٹرینیز کو آن لائن کورس تک رسائی کیسے ملتی ہے؟', 'प्रशिक्षुओं को ऑनलाइन कोर्स कैसे मिलते हैं?'),
+     L('Online courses are included with INOVEX training packages. Each company receives access codes; every code opens 30 days of access on this portal.',
+       'الدورات الإلكترونية مشمولة مع باقات تدريب INOVEX. تحصل كل شركة على رموز وصول، وكل رمز يفتح 30 يوماً على هذه المنصة.',
+       'آن لائن کورس INOVEX تربیتی پیکجز میں شامل ہیں۔ ہر کمپنی کو رسائی کوڈ ملتے ہیں؛ ہر کوڈ 30 دن کی رسائی دیتا ہے۔',
+       'ऑनलाइन कोर्स INOVEX प्रशिक्षण पैकेज में शामिल हैं। हर कंपनी को एक्सेस कोड मिलते हैं; हर कोड 30 दिनों की पहुँच देता है।')],
+    [L('Do trainees receive a certificate?', 'هل يحصل المتدربون على شهادة؟', 'کیا ٹرینیز کو سرٹیفکیٹ ملتا ہے؟', 'क्या प्रशिक्षुओं को प्रमाणपत्र मिलता है?'),
+     L('Yes. Completion, attendance or qualification certificates are issued by INOVEX Academy, authorised by Wagner Group and in association with Al Qemma Training Institute. Every certificate has an ID that anyone can verify online.',
+       'نعم، تُصدر أكاديمية INOVEX شهادات إتمام أو حضور أو تأهيل، معتمدة من مجموعة Wagner وبالشراكة مع معهد القمة، ولكل شهادة رقم يمكن التحقق منه إلكترونياً.',
+       'جی ہاں۔ INOVEX اکیڈمی تکمیل، حاضری یا اہلیت کے سرٹیفکیٹ جاری کرتی ہے؛ ہر سرٹیفکیٹ کا نمبر آن لائن تصدیق کیا جا سکتا ہے۔',
+       'हाँ। INOVEX अकादमी पूर्णता, उपस्थिति या योग्यता प्रमाणपत्र जारी करती है; हर प्रमाणपत्र की संख्या ऑनलाइन सत्यापित की जा सकती है।')],
+    [L('How do we request training for our team?', 'كيف نطلب تدريباً لفريقنا؟', 'اپنی ٹیم کے لیے تربیت کیسے طلب کریں؟', 'अपनी टीम के लिए प्रशिक्षण कैसे माँगें?'),
+     L('Fill in the training requirement form on this page or contact us on WhatsApp +966 50 962 0944. We reply within two working days with a recommended program and quotation.',
+       'املأ نموذج متطلبات التدريب في هذه الصفحة أو تواصل معنا عبر واتساب ‎+966 50 962 0944، وسنرد خلال يومي عمل بالبرنامج المقترح وعرض السعر.',
+       'اس صفحے پر تربیتی ضروریات کا فارم بھریں یا واٹس ایپ ‎+966 50 962 0944 پر رابطہ کریں۔ ہم دو کاروباری دنوں میں جواب دیتے ہیں۔',
+       'इस पेज पर प्रशिक्षण आवश्यकता फ़ॉर्म भरें या WhatsApp +966 50 962 0944 पर संपर्क करें। हम दो कार्य दिवसों में उत्तर देते हैं।')]
   ];
 
   /* ---------------------------------------------------------------- the Training Requirement Form (from the Word/PDF form) */
@@ -211,9 +246,9 @@
             <div class="lp-motto">${g(P.motto)}</div>
           </div>
           <aside class="lp-partners">
-            <div class="lp-plate"><img src="img/inovex.png" alt="INOVEX"></div>
-            <div class="lp-p"><span>${g(P.authorisedBy)}</span><img src="img/wagner.jpg" alt="WAGNER" class="wag"></div>
-            <div class="lp-p"><span>${g(P.inAssoc)}</span><div class="qem"><img src="img/alqemma.png" alt=""><b>${g(P.qemName)}</b></div></div>
+            <div class="lp-plate"><img src="/img/inovex.png" alt="INOVEX"></div>
+            <div class="lp-p"><span>${g(P.authorisedBy)}</span><img src="/img/wagner.jpg" alt="WAGNER" class="wag"></div>
+            <div class="lp-p"><span>${g(P.inAssoc)}</span><div class="qem"><img src="/img/alqemma.png" alt=""><b>${g(P.qemName)}</b></div></div>
           </aside>
         </div>
       </section>
@@ -239,9 +274,10 @@
         </div></section>
       <section class="lp-sec"><h2>${g(P.partnersT)}</h2>
         <div class="lp-plist">
-          <article><img src="img/wagner.jpg" alt="WAGNER" class="wag"><div><h3>${g(P.wagName)}</h3><p>${g(P.wagD)}</p></div></article>
-          <article><img src="img/alqemma.png" alt="" class="qlogo"><div><h3>${g(P.qemName)}</h3><p>${g(P.qemD)}</p></div></article>
+          <article><img src="/img/wagner.jpg" alt="WAGNER" class="wag"><div><h3>${g(P.wagName)}</h3><p>${g(P.wagD)}</p></div></article>
+          <article><img src="/img/alqemma.png" alt="" class="qlogo"><div><h3>${g(P.qemName)}</h3><p>${g(P.qemD)}</p></div></article>
         </div></section>
+      <section class="lp-sec lp-faq"><h2>${g(P.faqT)}</h2>${FAQ.map((f, i) => `<details ${i === 0 ? 'open' : ''}><summary>${g(f[0])}</summary><p>${g(f[1])}</p></details>`).join('')}</section>
       <section class="lp-band"><div><h2>${g(P.bandT)}</h2><p>${g(P.bandD)}</p></div>
         <div class="lp-band-cta"><a class="btn gold" href="#/request">${g(P.ctaRequest)}</a>
         <div class="lp-contact"><a class="btn wa" href="https://wa.me/966509620944" target="_blank" rel="noopener">WhatsApp</a><a class="btn callb" href="tel:+966509620944">${g(P.call)} <span class="mono">+966 50 962 0944</span></a></div>
@@ -267,7 +303,7 @@
     };
     h.view(`<div class="rq"><div class="crumbs"><a href="#/">${h.t('academy')}</a> / ${g(UI.formT)}</div>
       <div class="rq-head"><div><h1>${g(UI.formT)}</h1><p>${g(UI.formS)}</p></div>
-        <div class="rq-logos"><img src="img/wagner.jpg" alt="WAGNER" class="wag"><img src="img/alqemma.png" alt="Al Qemma"></div></div>
+        <div class="rq-logos"><img src="/img/wagner.jpg" alt="WAGNER" class="wag"><img src="/img/alqemma.png" alt="Al Qemma"></div></div>
       <form id="rqf" novalidate>
         <input type="text" name="website" tabindex="-1" autocomplete="off" class="hp" aria-hidden="true">
         ${FORM.map((s, i) => `<fieldset class="rq-sec"><legend><span>${g(UI.section)} ${i + 1}</span>${g(s.t)}</legend><div class="rq-grid">${s.f.map(fieldHtml).join('')}</div></fieldset>`).join('')}
@@ -331,8 +367,8 @@
       rows += `<tr><td class="le">${ESC(r.label)}</td><td class="v" dir="auto">${ESC(r.value || '—')}</td><td class="la" dir="rtl">${ESC(r.labelAr)}</td></tr>`;
     });
     const when = new Date();
-    return `<div class="rqpdf" id="rqpdf"><div class="rtop"><img src="img/inovex.png" alt=""><div class="tt"><b>INOVEX ACADEMY</b><span>Industrial Training · التدريب الصناعي</span></div>
-      <div class="pl"><img src="img/wagner.jpg" alt=""><img src="img/alqemma.png" alt=""></div></div>
+    return `<div class="rqpdf" id="rqpdf"><div class="rtop"><img src="/img/inovex.png" alt=""><div class="tt"><b>INOVEX ACADEMY</b><span>Industrial Training · التدريب الصناعي</span></div>
+      <div class="pl"><img src="/img/wagner.jpg" alt=""><img src="/img/alqemma.png" alt=""></div></div>
       <h1>Training Requirement Form <span dir="rtl">نموذج متطلبات التدريب</span></h1>
       <div class="meta">${ref ? 'Ref ' + ESC(ref) + ' · ' : ''}${when.toISOString().slice(0, 16).replace('T', ' ')} · academy.inovex-group.com</div>
       <table>${rows}</table><div class="foot">INOVEX GROUP | TRAINING TODAY … DRIVING TOMORROW</div></div>`;
@@ -369,5 +405,5 @@
     };
   }
 
-  window.IA_PUBLIC = { landing: landing, request: request };
+  window.IA_PUBLIC = { landing: landing, request: request, FAQ: FAQ, FIELDS: FIELDS, P: P };
 })();
