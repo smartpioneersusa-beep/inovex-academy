@@ -43,6 +43,8 @@
     if (!res.ok) {
       if (['auth', 'session_expired', 'access_expired'].indexOf(res.error) >= 0 && S.token) {
         signOut(false); S.flash = { err: t('e_' + res.error) }; go('/login');
+      } else if (res.error === 'no_access' && S.token && action !== 'redeem') {
+        if (S.user) S.user.access = false; S.catalog = null; go('/access');
       }
       throw new Error(res.error || 'server_error');
     }
@@ -139,6 +141,9 @@
         return viewLanding();
       }
       if (!S.user) await loadMe();
+      else if (!S.user.access && !S.user.admin) await loadMe();   // pick up access granted by an admin
+      if ((p[0] === 'access' && !S.user.access) || (!S.user.access && !S.user.admin)) return viewAccess();
+      if (p[0] === 'access') return viewHome();
       if (p[0] === 'admin' && S.user.admin) return viewAdmin();
       if (p[0] === 'c' && p[1]) {
         if (p[2] === 'm') return viewModule(p[1], Number(p[3] || 1));
@@ -193,7 +198,7 @@
   function startSession(r) {
     S.token = r.token; S.user = r.user; store.set('token', r.token); store.set('pending', null);
     if (r.user.lang && r.user.lang !== S.lang && !store.get('lang')) { S.lang = r.user.lang; }
-    applyLang(); go('/home');
+    applyLang(); go(r.user.access || r.user.admin ? '/home' : '/access');
   }
   function showErr(form, err) {
     let m = form.parentNode.querySelector('.msg'); if (m) m.remove();
@@ -212,13 +217,14 @@
       <label class="field"><span>${t('password')}</span><input name="password" type="password" required minlength="8" dir="ltr" autocomplete="new-password"><div class="hint">${t('pwRule')}</div></label>
       <label class="field"><span>${t('company')}</span><input name="company" maxlength="80" autocomplete="organization"></label>
       <label class="field"><span>${t('phone')}</span><input name="phone" type="tel" maxlength="30" dir="ltr" autocomplete="tel"></label>
+      <label class="field"><span>${t('accessCode')}</span><input name="accessCode" class="mono" dir="ltr" maxlength="20" placeholder="INX-XXXX-XXXX" style="text-transform:uppercase"><div class="hint">${t('accessCodeHint')}</div></label>
       <button class="btn gold" style="width:100%">${t('createAccount')}</button></form>
       <div class="links"><span>${t('haveAccount')}</span><a href="#/login">${t('signIn')}</a></div></div>`);
     $('#sf').onsubmit = async e => {
       e.preventDefault();
       const f = e.target, b = f.querySelector('button'); busy(b, true);
       try {
-        await api('signup', { name: f.name.value, email: f.email.value, password: f.password.value, company: f.company.value, phone: f.phone.value });
+        await api('signup', { name: f.name.value, email: f.email.value, password: f.password.value, company: f.company.value, phone: f.phone.value, accessCode: f.accessCode.value });
         S.pendingEmail = f.email.value.trim().toLowerCase(); store.set('pending', S.pendingEmail); go('/verify');
       } catch (err) { showErr(f, err); busy(b, false); }
     };
@@ -547,6 +553,19 @@
   }
 
   /* ---------------------------------------------------------------- certificate check (public) */
+  function viewAccess() {
+    const had = S.user.expires && S.user.status === 'active';
+    view(`<div class="card auth" style="max-width:560px"><div class="pill ${had ? 'bad' : 'gold'}">${had ? t('expired') : t('awaiting')}</div>
+      <h2 style="margin-top:10px">${t('accessT')}</h2><p>${t('accessD')}</p>${msgBox()}
+      <form id="xf"><label class="field"><span>${t('accessCode')}</span><input name="code" class="mono code" style="font-size:22px;letter-spacing:.15em" dir="ltr" maxlength="20" placeholder="INX-XXXX-XXXX" required></label>
+      <button class="btn gold" style="width:100%">${t('redeem')}</button></form>
+      <div class="links"><a href="#/request">${t('requestTraining')}</a><a href="https://wa.me/966509620944" target="_blank" rel="noopener">WhatsApp +966 50 962 0944</a><a href="mailto:j.alnajar@inovex-group.com">j.alnajar@inovex-group.com</a></div></div>`);
+    $('#xf').onsubmit = async e => {
+      e.preventDefault(); const f = e.target, b = f.querySelector('button'); busy(b, true);
+      try { const r = await api('redeem', { code: f.code.value }); S.user = Object.assign(S.user, r.user); S.catalog = null; S.flash = { ok: t('accessOk') }; go('/home'); }
+      catch (err) { showErr(f, err); busy(b, false); }
+    };
+  }
   function viewAdminLogin() {
     view(`<div class="card auth"><div class="pill gold">${t('admin')}</div><h2 style="margin-top:10px">${t('adminSignIn')}</h2><p class="hint">${t('adminSub')}</p>${msgBox()}
       <form id="af1"><label class="field"><span>${t('email')}</span><input name="email" type="email" required dir="ltr" value="info@inovex-group.com" autocomplete="username"></label>
@@ -585,16 +604,16 @@
   async function viewAdmin(tab) {
     tab = tab || 'trainees';
     view(`<p>${t('loading')}</p>`);
-    const [u, r, a, cz] = await Promise.all([api('adminUsers'), api('adminResults'), api('adminApplications').catch(() => ({ applications: [] })), tab === 'certs' ? api('adminCerts') : Promise.resolve({ certificates: [] })]);
-    const users = u.users, results = r.results, apps = a.applications || [], certs = cz.certificates || [];
+    const [u, r, a, cz, kz] = await Promise.all([api('adminUsers'), api('adminResults'), api('adminApplications').catch(() => ({ applications: [] })), tab === 'certs' ? api('adminCerts') : Promise.resolve({ certificates: [] }), tab === 'codes' ? api('adminCodes') : Promise.resolve({ codes: [] })]);
+    const users = u.users, results = r.results, apps = a.applications || [], certs = cz.certificates || [], codes = kz.codes || [];
     const now = Date.now();
-    const state = x => x.status === 'disabled' ? 'disabled' : !x.verified ? 'pending' : (x.expires && new Date(x.expires) < now ? 'expired' : 'active');
+    const state = x => x.status === 'disabled' ? 'disabled' : !x.verified ? 'pending' : x.status === 'awaiting' ? 'awaiting' : (x.expires && new Date(x.expires) < now ? 'expired' : 'active');
     const passedSet = new Set(results.filter(x => x.passed).map(x => x.email));
     const kpi = `<div class="kpis"><div class="kpi"><b>${users.length}</b><span>${t('trainees')}</span></div>
       <div class="kpi"><b>${users.filter(x => state(x) === 'active').length}</b><span>${t('active')}</span></div>
       <div class="kpi"><b>${passedSet.size}</b><span>${t('passed')}</span></div>
       <div class="kpi"><b>${results.length}</b><span>${t('attempts')}</span></div></div>`;
-    view(`<h1>${t('admin')}</h1>${kpi}<div class="tabs"><button data-tab="trainees" class="${tab === 'trainees' ? 'on' : ''}">${t('trainees')}</button><button data-tab="results" class="${tab === 'results' ? 'on' : ''}">${t('results')}</button><button data-tab="requests" class="${tab === 'requests' ? 'on' : ''}">${t('requests')} (${apps.length})</button><button data-tab="certs" class="${tab === 'certs' ? 'on' : ''}">${t('certificates')}</button></div>
+    view(`${msgBox()}<h1>${t('admin')}</h1>${kpi}<div class="tabs"><button data-tab="trainees" class="${tab === 'trainees' ? 'on' : ''}">${t('trainees')}</button><button data-tab="results" class="${tab === 'results' ? 'on' : ''}">${t('results')}</button><button data-tab="requests" class="${tab === 'requests' ? 'on' : ''}">${t('requests')} (${apps.length})</button><button data-tab="certs" class="${tab === 'certs' ? 'on' : ''}">${t('certificates')}</button><button data-tab="codes" class="${tab === 'codes' ? 'on' : ''}">${t('codesTab')}</button></div>
       <div class="toolbar"><input id="q" placeholder="${t('search')}"><button class="btn small dark" id="csv">${t('exportCsv')}</button></div><div class="tablewrap" id="tb"></div>`);
     app.querySelectorAll('[data-tab]').forEach(b => b.onclick = () => viewAdmin(b.getAttribute('data-tab')));
     const draw = () => {
@@ -609,11 +628,43 @@
             <td>${x.expires ? fmtDate(x.expires) + ` <span class="hint">(${daysLeft(x.expires)})</span>` : '—'}</td>
             <td><span class="pill ${s === 'active' ? 'ok' : s === 'pending' ? '' : 'bad'}">${t(s)}</span></td>
             <td class="mono">${x.modulesOpened}/8 ${x.presentation ? '▶' : ''}</td><td class="mono">${x.best ? x.best.score + ' (' + x.best.percent + '%)' + (x.best.passed ? ' ✓' : '') : '—'} <span class="hint">×${x.attempts}</span></td>
-            <td style="white-space:nowrap"><button class="btn small gold" data-ext="${esc(x.email)}">${t('extend')}</button>
+            <td style="white-space:nowrap"><button class="btn small gold" data-ext="${esc(x.email)}">${s === 'awaiting' || s === 'expired' ? t('grant') : t('extend')}</button>
             <button class="btn small ghost" data-st="${esc(x.email)}" data-v="${x.status === 'disabled' ? 'active' : 'disabled'}">${x.status === 'disabled' ? t('enable') : t('disable')}</button></td></tr>`;
           }).join('') + `</table>`;
         $('#tb').querySelectorAll('[data-ext]').forEach(b => b.onclick = () => upd(b, { email: b.getAttribute('data-ext'), extendDays: 30 }));
         $('#tb').querySelectorAll('[data-st]').forEach(b => b.onclick = () => upd(b, { email: b.getAttribute('data-st'), status: b.getAttribute('data-v') }));
+      } else if (tab === 'codes') {
+        const rows = codes.filter(x => !q || (x.code + ' ' + x.company + ' ' + x.requestRef + ' ' + x.redeemedBy).toLowerCase().indexOf(q) >= 0);
+        const msgText = x => encodeURIComponent(`INOVEX Academy — your access code: ${x.code}\n1) Open https://academy.inovex-group.com/#/signup\n2) Create your account and enter the code (or enter it after signing in).\nAccess: ${x.days} days.\n\nأكاديمية INOVEX — رمز الوصول الخاص بك: ${x.code}\nأنشئ حسابك على الرابط أعلاه وأدخل الرمز.`);
+        $('#tb').innerHTML = `<details class="issue" ${codes.length ? '' : 'open'}><summary class="btn small gold">＋ ${t('newCodes')}</summary>
+          <form id="ccf" class="issue-grid"><label class="field"><span>${t('company').replace(/\s*\(.*\)/, '')}</span><input name="company" required maxlength="120"></label>
+          <label class="field"><span>${t('codeKind')}</span><select name="mode" class="sel"><option value="shared">${t('codeShared')}</option><option value="single">${t('codeSingle')}</option></select></label>
+          <label class="field"><span>${t('seats')}</span><input name="seats" type="number" min="1" max="500" value="5"></label>
+          <label class="field"><span>${t('days')}</span><input name="days" type="number" min="1" max="365" value="30"></label>
+          <label class="field"><span>${t('courses')}</span><select name="courses" class="sel"><option value="*">${t('allCourses')}</option><option value="PC-101">PC-101</option></select></label>
+          <label class="field"><span>${t('deadline')} (${t('optional')})</span><input name="validUntil" type="date"></label>
+          <label class="field"><span>${t('requestRef')} (${t('optional')})</span><input name="requestRef" maxlength="40" placeholder="TR-…"></label>
+          <label class="field"><span>${t('notesLabel')}</span><input name="note" maxlength="300" placeholder="Invoice / PO"></label>
+          <div><button class="btn dark">${t('newCodes')}</button></div></form><div id="newc"></div></details>
+          <table class="table"><tr><th>${t('accessCode')}</th><th>${t('company').replace(/\s*\(.*\)/, '')}</th><th>${t('seats')}</th><th>${t('days')}</th><th>${t('courses')}</th><th>${t('deadline')}</th><th>${t('status')}</th><th></th></tr>` +
+          rows.map(x => `<tr><td class="mono"><b>${esc(x.code)}</b>${x.requestRef ? `<div class="hint">${esc(x.requestRef)}</div>` : ''}</td><td>${esc(x.company)}${x.note ? `<div class="hint">${esc(x.note)}</div>` : ''}</td>
+            <td class="mono">${x.used}/${x.seats}${x.redeemedBy ? `<div class="hint" title="${esc(x.redeemedBy)}">${esc(String(x.redeemedBy).split(',').slice(0, 2).join(', '))}${String(x.redeemedBy).split(',').length > 2 ? '…' : ''}</div>` : ''}</td>
+            <td class="mono">${x.days}</td><td class="mono">${x.courses === '*' ? t('allCourses') : esc(x.courses)}</td><td>${x.validUntil ? fmtDate(x.validUntil) : '—'}</td>
+            <td><span class="pill ${x.status === 'active' && Number(x.used) < Number(x.seats) ? 'ok' : 'bad'}">${x.status !== 'active' ? t('disabled') : Number(x.used) >= Number(x.seats) ? t('usedUp') : t('active')}</span></td>
+            <td style="white-space:nowrap"><button class="btn small ghost" data-copy="${esc(x.code)}">${t('copy')}</button> <a class="btn small ghost" href="mailto:?subject=${encodeURIComponent('INOVEX Academy access code')}&body=${msgText(x)}">${t('email').replace(/\s*\(.*\)/, '')}</a> <a class="btn small wa" href="https://wa.me/?text=${msgText(x)}" target="_blank" rel="noopener">WA</a>
+            <button class="btn small ghost" data-kst="${esc(x.code)}" data-v="${x.status === 'active' ? 'disabled' : 'active'}">${x.status === 'active' ? t('disable') : t('enable')}</button></td></tr>`).join('') + `</table>`;
+        $('#ccf').onsubmit = async e => {
+          e.preventDefault(); const f = e.target, b = f.querySelector('button'); busy(b, true);
+          const single = f.mode.value === 'single';
+          try {
+            const r2 = await api('adminCreateCodes', { company: f.company.value, seats: single ? 1 : f.seats.value, count: single ? f.seats.value : 1, days: f.days.value, courses: f.courses.value, validUntil: f.validUntil.value, requestRef: f.requestRef.value, note: f.note.value });
+            S.flash = { ok: r2.codes.map(c => c.code).join('  ') }; viewAdmin('codes');
+          } catch (err) { alertless(errText(err)); busy(b, false); }
+        };
+        $('#tb').querySelectorAll('[data-copy]').forEach(b => b.onclick = () => { try { navigator.clipboard.writeText(b.getAttribute('data-copy')); b.textContent = '✓'; } catch (e) {} });
+        $('#tb').querySelectorAll('[data-kst]').forEach(b => b.onclick = async () => {
+          busy(b, true); try { await api('adminCodeStatus', { code: b.getAttribute('data-kst'), status: b.getAttribute('data-v') }); viewAdmin('codes'); } catch (err) { alertless(errText(err)); busy(b, false); }
+        });
       } else if (tab === 'certs') {
         const rows = certs.filter(x => !q || (x.name + ' ' + x.email + ' ' + x.company + ' ' + x.certificateId + ' ' + x.course).toLowerCase().indexOf(q) >= 0);
         $('#tb').innerHTML = `<details class="issue" ${certs.length ? '' : 'open'}><summary class="btn small gold">＋ ${t('issueCert')}</summary>
@@ -668,7 +719,9 @@
     }
     $('#q').oninput = draw;
     $('#csv').onclick = () => {
-      const rows = tab === 'certs'
+      const rows = tab === 'codes'
+        ? [['code', 'company', 'seats', 'used', 'days', 'courses', 'validUntil', 'status', 'requestRef', 'note', 'redeemedBy']].concat(codes.map(x => [x.code, x.company, x.seats, x.used, x.days, x.courses, x.validUntil, x.status, x.requestRef, x.note, x.redeemedBy]))
+        : tab === 'certs'
         ? [['certificateId', 'name', 'company', 'email', 'course', 'type', 'date', 'score', 'status', 'source']].concat(certs.map(x => [x.certificateId, x.name, x.company, x.email, x.course, x.type, x.date, x.score, x.status, x.source]))
         : tab === 'requests'
         ? [['time', 'ref', 'company', 'contact', 'email', 'phone', 'trainees', 'pdf']].concat(apps.map(x => [x.time, x.ref, x.company, x.contact, x.email, x.phone, x.trainees, x.pdf]))

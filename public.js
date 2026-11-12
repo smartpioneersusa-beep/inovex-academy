@@ -55,10 +55,11 @@
     videosT: L('See the Academy in action', 'شاهد الأكاديمية أثناء العمل', 'اکیڈمی کو عمل میں دیکھیں', 'अकादमी को काम करते देखें'),
     soon: L('Video coming soon', 'الفيديو قريباً', 'ویڈیو جلد آ رہی ہے', 'वीडियो जल्द आ रहा है'),
     onlineT: L('Online courses', 'الدورات الإلكترونية', 'آن لائن کورس', 'ऑनलाइन कोर्स'),
-    onlineS: L('Registered trainees get 30 days of access: course book, web presentation and assessment in their language.',
-      'يحصل المتدربون المسجّلون على وصول لمدة 30 يوماً: كتاب الدورة والعرض والتقييم بلغتهم.',
-      'رجسٹرڈ ٹرینیز کو 30 دن کی رسائی ملتی ہے: کورس بک، ویب پریزنٹیشن اور جائزہ اپنی زبان میں۔',
-      'पंजीकृत प्रशिक्षुओं को 30 दिनों की पहुँच: कोर्स बुक, वेब प्रस्तुति और मूल्यांकन उनकी भाषा में।'),
+    onlineS: L('Online courses are included with INOVEX training packages. Your company receives access codes — each opens 30 days of course book, web presentation and assessment in your language.',
+      'الدورات الإلكترونية مشمولة مع باقات تدريب INOVEX. تحصل شركتك على رموز وصول — كل رمز يفتح 30 يوماً من كتاب الدورة والعرض والتقييم بلغتك.',
+      'آن لائن کورس INOVEX تربیتی پیکجز میں شامل ہیں۔ آپ کی کمپنی کو رسائی کوڈ ملتے ہیں — ہر کوڈ 30 دن کے لیے کورس بک، پریزنٹیشن اور جائزہ کھولتا ہے۔',
+      'ऑनलाइन कोर्स INOVEX प्रशिक्षण पैकेज में शामिल हैं। आपकी कंपनी को एक्सेस कोड मिलते हैं — हर कोड आपकी भाषा में 30 दिनों के लिए कोर्स बुक, प्रस्तुति और मूल्यांकन खोलता है।'),
+    haveCode: L('Have an access code? Create your account', 'لديك رمز وصول؟ أنشئ حسابك', 'رسائی کوڈ ہے؟ اکاؤنٹ بنائیں', 'एक्सेस कोड है? खाता बनाएँ'),
     pc101: L('Powder Coating Fundamentals', 'أساسيات الطلاء بالبودرة', 'پاؤڈر کوٹنگ کی بنیادی باتیں', 'पाउडर कोटिंग की बुनियादी बातें'),
     pc101d: L('8 modules · 25-slide presentation · 30-question assessment · certificate', '8 وحدات · عرض من 25 شريحة · تقييم من 30 سؤالاً · شهادة', '8 ماڈیول · 25 سلائیڈز · 30 سوالات · سرٹیفکیٹ', '8 मॉड्यूल · 25 स्लाइड · 30 प्रश्न · प्रमाणपत्र'),
     more: L('More courses are on the way', 'دورات أخرى قيد الإعداد', 'مزید کورس تیار ہو رہے ہیں', 'और कोर्स आ रहे हैं'),
@@ -233,7 +234,7 @@
       <section class="lp-sec"><h2>${g(P.videosT)}</h2><div class="lp-videos">${videoTiles}</div></section>
       <section class="lp-sec"><h2>${g(P.onlineT)}</h2><p class="lp-lead">${g(P.onlineS)}</p>
         <div class="lp-courses">
-          <a class="lp-course" href="${signedIn ? '#/c/PC-101' : '#/login'}"><span class="code">PC-101</span><b>${g(P.pc101)}</b><small>${g(P.pc101d)}</small><span class="go">${signedIn ? g(P.ctaMine) : g(P.ctaSignin)} →</span></a>
+          <a class="lp-course" href="${signedIn ? '#/c/PC-101' : '#/signup'}"><span class="code">PC-101</span><b>${g(P.pc101)}</b><small>${g(P.pc101d)}</small><span class="go">${signedIn ? g(P.ctaMine) : g(P.haveCode)} →</span></a>
           <div class="lp-course muted"><span class="code">2027</span><b>${g(P.more)}</b><small>${g(P.moreD)}</small></div>
         </div></section>
       <section class="lp-sec"><h2>${g(P.partnersT)}</h2>
