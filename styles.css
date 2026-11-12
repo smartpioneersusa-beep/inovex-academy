@@ -27,7 +27,7 @@ html[lang=en] h1, html[lang=en] .brand { letter-spacing: .02em }
 .brand small { display: block; font-family: var(--body); font-weight: 400; font-size: 11px; letter-spacing: .04em; color: var(--silver) }
 .top .sp { flex: 1 }
 .langsel { background: var(--ink2); color: #fff; border: 1px solid #555; border-radius: 8px; padding: 6px 10px; cursor: pointer }
-.navbtn { background: none; border: 1px solid transparent; color: var(--silver2); padding: 6px 10px; border-radius: 8px; cursor: pointer; text-decoration: none; font-size: 14px }
+.navbtn { white-space: nowrap; background: none; border: 1px solid transparent; color: var(--silver2); padding: 6px 10px; border-radius: 8px; cursor: pointer; text-decoration: none; font-size: 14px }
 .navbtn:hover { border-color: #555; color: #fff }
 
 main { max-width: 1180px; margin: auto; padding: 24px 16px 60px; min-height: 70vh }
@@ -246,4 +246,132 @@ html[lang=ur] .slide li::before { top: .95em }
   .hero { grid-template-columns: 1fr } .hero h1 { font-size: 28px } .hero .pitch { min-height: 0; padding: 28px 22px }
   .course-top { grid-template-columns: 1fr } .reader { padding: 20px 16px } .reader .two { grid-template-columns: 1fr }
   .kpis { grid-template-columns: 1fr 1fr } .brand small { display: none } .mbar { grid-template-columns: 1fr 80px 44px }
+}
+
+/* ===== header logo ===== */
+.hlogo { height: 30px; width: auto; border-radius: 4px; background: #E8E8E6; padding: 3px 6px; box-sizing: content-box }
+.hacad { display: block; font-family: 'Oswald', sans-serif; color: var(--gold); letter-spacing: .3em; font-size: 15px; line-height: 1.1 }
+.btn.line { background: transparent; color: #fff; border: 1px solid #6A6A6A }
+.btn.line:hover { border-color: var(--gold); color: var(--gold) }
+@media (max-width: 700px) { .hide-sm { display: none } }
+
+/* ===== landing ===== */
+.lp-hero { background: radial-gradient(ellipse at 85% 10%, rgba(201,166,70,.22), transparent 55%), linear-gradient(160deg, #222 0%, #141414 100%); color: #fff; border-radius: 18px; overflow: hidden; position: relative }
+.lp-hero::after { content: ""; position: absolute; inset: auto 0 0 0; height: 5px; background: linear-gradient(90deg, var(--gold-d), var(--gold2), var(--gold-d)) }
+.lp-hero-in { display: grid; grid-template-columns: 1.35fr .9fr; gap: 34px; padding: 54px 50px 58px; align-items: center }
+.lp-eyebrow { color: var(--gold); font-weight: 700; letter-spacing: .16em; font-size: 12.5px; text-transform: uppercase }
+html[lang=ar] .lp-eyebrow, html[lang=ur] .lp-eyebrow, html[lang=hi] .lp-eyebrow { letter-spacing: 0; font-size: 14px }
+.lp-hero h1 { font-size: 50px; line-height: 1.08; margin: 14px 0 16px; max-width: 640px }
+html[lang=ur] .lp-hero h1 { font-size: 40px; line-height: 1.6 }
+.lp-hero p { color: #D2D2D2; font-size: 17.5px; max-width: 580px; margin: 0 }
+.lp-cta { display: flex; flex-wrap: wrap; gap: 12px; margin: 28px 0 22px }
+.lp-cta .btn { padding: 14px 22px; font-size: 16px }
+.lp-motto { font-family: 'Oswald', var(--head); letter-spacing: .14em; color: var(--silver); font-size: 13px; text-transform: uppercase }
+html[lang=ar] .lp-motto, html[lang=ur] .lp-motto, html[lang=hi] .lp-motto { letter-spacing: 0; font-size: 15px }
+.lp-partners { background: rgba(255,255,255,.04); border: 1px solid #3A3A3A; border-radius: 14px; padding: 22px; display: grid; gap: 16px }
+.lp-plate { background: linear-gradient(180deg, #F4F4F2, #D9D9D6); border-radius: 10px; padding: 14px; display: grid; place-items: center }
+.lp-plate img { width: 82%; height: auto }
+.lp-p { display: grid; gap: 8px }
+.lp-p span { font-size: 12px; color: var(--silver); text-transform: uppercase; letter-spacing: .1em }
+html[lang=ar] .lp-p span, html[lang=ur] .lp-p span { letter-spacing: 0; font-size: 13px }
+.lp-p .wag { height: 64px; width: auto; border-radius: 6px; justify-self: start }
+.qem { display: flex; align-items: center; gap: 12px; background: #fff; border-radius: 8px; padding: 8px 12px; color: #16365C }
+.qem img { height: 46px; width: auto } .qem b { font-size: 15px }
+.lp-stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1px; background: var(--line); border: 1px solid var(--line); border-radius: 14px; overflow: hidden; margin: 22px 0 8px }
+.lp-stats div { background: #fff; padding: 20px 22px }
+.lp-stats b { display: block; font-family: 'Oswald', sans-serif; font-size: 38px; color: var(--ink); line-height: 1.1; direction: ltr; unicode-bidi: isolate }
+html[dir=rtl] .lp-stats b { text-align: right }
+.lp-stats span { font-size: 14px; color: var(--muted) }
+.lp-sec { margin: 56px 0 0 }
+.lp-sec > h2 { font-size: 30px; margin: 0 0 6px; display: flex; align-items: center; gap: 12px }
+.lp-sec > h2::before { content: ""; width: 26px; height: 4px; background: var(--gold); border-radius: 2px }
+.lp-lead { color: var(--muted); margin: 0 0 18px; max-width: 760px }
+.lp-fields { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 10px; margin-top: 16px }
+.lp-fields div { background: #fff; border: 1px solid var(--line); border-radius: 12px; padding: 14px 16px; font-weight: 600; display: flex; align-items: center; gap: 12px }
+.lp-fields i { font-style: normal; width: 34px; height: 34px; border-radius: 9px; background: var(--ink); color: var(--gold); display: grid; place-items: center; flex: none; font-size: 17px }
+.lp-levels { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-top: 18px }
+.lp-levels article { background: #fff; border: 1px solid var(--line); border-radius: 14px; padding: 24px; position: relative }
+.lp-levels article.hl { background: var(--ink); color: #fff; border-color: var(--ink) }
+.lp-levels article.hl p { color: #CFCFCF }
+.lp-levels .lv { font-family: 'JetBrains Mono', monospace; color: var(--gold-d); font-weight: 700 }
+.lp-levels .hl .lv { color: var(--gold) }
+.lp-levels h3 { font-size: 24px; margin: 8px 0 8px } .lp-levels p { margin: 0; color: var(--ink3); font-size: 15px }
+.lp-note { font-size: 14px; color: var(--muted); margin-top: 12px }
+.lp-how ol { list-style: none; padding: 0; margin: 18px 0 0; display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; counter-reset: s }
+.lp-how li { background: #fff; border: 1px solid var(--line); border-radius: 14px; padding: 20px; position: relative }
+.lp-how li span { display: grid; place-items: center; width: 36px; height: 36px; border-radius: 50%; background: linear-gradient(180deg, var(--gold2), var(--gold)); font-family: 'JetBrains Mono', monospace; font-weight: 700; margin-bottom: 10px }
+.lp-how li b { display: block; font-size: 17px } .lp-how li p { margin: 6px 0 0; font-size: 14px; color: var(--muted) }
+.lp-videos { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 16px; margin-top: 18px }
+.vid { margin: 0 } .vid iframe, .vid video, .vid.soon > div { width: 100%; aspect-ratio: 16/9; border: 0; border-radius: 12px; background: #111; display: block }
+.vid.soon > div { display: grid; place-items: center; align-content: center; gap: 10px; color: var(--silver); background: linear-gradient(135deg, #222, #161616); font-size: 14px }
+.vid.soon span { width: 54px; height: 54px; border-radius: 50%; border: 2px solid var(--gold); color: var(--gold); display: grid; place-items: center; font-size: 20px; padding-inline-start: 4px }
+.vid figcaption { font-weight: 600; margin-top: 8px; font-size: 15px }
+.lp-courses { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 16px }
+.lp-course { display: flex; flex-direction: column; gap: 6px; text-decoration: none; background: var(--ink); color: #fff; border-radius: 14px; padding: 24px; border: 1px solid var(--ink); transition: transform .15s }
+.lp-course:hover { transform: translateY(-2px) }
+.lp-course .code { font-family: 'JetBrains Mono', monospace; color: var(--gold); font-size: 13px }
+.lp-course b { font-size: 22px; font-family: var(--head) } .lp-course small { color: var(--silver); font-size: 14px }
+.lp-course .go { margin-top: 10px; color: var(--gold); font-weight: 600 }
+.lp-course.muted { background: #fff; color: var(--ink); border: 1px dashed #BDB9AE } .lp-course.muted small { color: var(--muted) } .lp-course.muted .code { color: var(--muted) }
+.lp-plist { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-top: 18px }
+.lp-plist article { display: flex; gap: 18px; align-items: flex-start; background: #fff; border: 1px solid var(--line); border-radius: 14px; padding: 22px }
+.lp-plist .wag { width: 150px; height: auto; border-radius: 8px; flex: none }
+.lp-plist .qlogo { width: 92px; height: auto; flex: none; margin: 0 29px }
+.lp-plist h3 { font-size: 20px; margin: 0 0 6px } .lp-plist p { margin: 0; font-size: 14.5px; color: var(--ink3) }
+.lp-band { margin: 56px 0 10px; background: linear-gradient(120deg, var(--gold2), var(--gold) 55%, var(--gold-d)); border-radius: 16px; padding: 30px 34px; display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 18px; color: var(--ink) }
+.lp-band h2 { font-size: 28px; margin: 0 } .lp-band p { margin: 4px 0 0 }
+.lp-band-cta { display: grid; gap: 8px; justify-items: end } .lp-band-cta .btn.gold { background: var(--ink); color: var(--gold) }
+html[dir=rtl] .lp-band-cta { justify-items: start }
+.lp-band .mono { font-size: 13px }
+
+/* ===== request form ===== */
+.rq { max-width: 960px; margin: auto }
+.rq-head { display: flex; justify-content: space-between; gap: 20px; align-items: flex-start; margin-bottom: 18px }
+.rq-head h1 { font-size: 34px } .rq-head p { color: var(--muted); max-width: 640px; margin: 0 }
+.rq-logos { display: flex; gap: 10px; align-items: center } .rq-logos img { height: 52px; width: auto; border-radius: 6px } .rq-logos .wag { height: 44px }
+.rq-sec { border: 1px solid var(--line); background: #fff; border-radius: 14px; padding: 8px 22px 18px; margin: 0 0 16px }
+.rq-sec legend { font-family: var(--head); font-size: 20px; font-weight: 700; padding: 0 8px; display: flex; gap: 10px; align-items: baseline }
+.rq-sec legend span { font-family: 'JetBrains Mono', monospace; font-size: 12px; color: #fff; background: var(--ink); border-radius: 5px; padding: 2px 7px; font-weight: 700 }
+.rq-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 4px 18px }
+.rq-f.wide { grid-column: 1 / -1; margin: 6px 0 10px }
+.rq-f em { color: var(--bad); font-style: normal }
+.rq-l { display: block; font-size: 13px; font-weight: 600; margin-bottom: 7px; color: var(--ink3) }
+.rq textarea { width: 100%; padding: 11px 12px; border: 1px solid #CFCCC4; border-radius: 8px; font: inherit; resize: vertical }
+.chips { display: flex; flex-wrap: wrap; gap: 8px }
+.chip { position: relative; cursor: pointer }
+.chip input { position: absolute; opacity: 0; pointer-events: none }
+.chip span { display: inline-block; padding: 8px 14px; border: 1.5px solid var(--line); border-radius: 999px; background: #FBFAF7; font-size: 14.5px; transition: all .12s }
+.chip:hover span { border-color: var(--gold) }
+.chip input:checked + span { background: var(--ink); color: var(--gold); border-color: var(--ink) }
+.chip input:focus-visible + span { outline: 2px solid var(--gold); outline-offset: 2px }
+.rq-detail { margin-top: 8px; width: 100%; padding: 9px 12px; border: 1px solid #CFCCC4; border-radius: 8px; font: inherit }
+.rq-f.bad input:not([type=checkbox]):not([type=radio]), .rq-f.bad .chips { outline: 2px solid var(--bad); outline-offset: 3px; border-radius: 8px }
+.rq-send { display: flex; flex-wrap: wrap; align-items: center; gap: 14px; margin: 6px 0 30px } .rq-send .btn { padding: 14px 28px; font-size: 16px }
+.hp { position: absolute; left: -9999px; width: 1px; height: 1px; opacity: 0 }
+.donecheck { width: 64px; height: 64px; border-radius: 50%; background: var(--ok); color: #fff; font-size: 34px; display: grid; place-items: center; margin: 0 auto 12px }
+/* PDF sheet (off-screen) */
+.rqpdf-wrap { position: fixed; left: -4000px; top: 0 }
+.rqpdf { width: 794px; background: #fff; color: #1C1C1C; padding: 34px 40px; font-family: 'Inter', 'IBM Plex Sans Arabic', sans-serif; font-size: 12.5px }
+.rqpdf .rtop { display: flex; align-items: center; gap: 14px; border-bottom: 3px solid #1C1C1C; padding-bottom: 12px }
+.rqpdf .rtop > img { height: 34px; background: #EEE; padding: 3px 6px; border-radius: 4px }
+.rqpdf .tt { flex: 1 } .rqpdf .tt b { display: block; font-family: 'Oswald', sans-serif; letter-spacing: .25em; font-size: 16px } .rqpdf .tt span { color: #777; font-size: 11px }
+.rqpdf .pl img { height: 36px; margin-inline-start: 8px; border-radius: 4px }
+.rqpdf h1 { font-size: 20px; margin: 16px 0 2px; display: flex; justify-content: space-between; font-family: 'Oswald', 'IBM Plex Sans Arabic', sans-serif }
+.rqpdf h1, .rqpdf h1 span, .rqpdf [dir=rtl], .rqpdf td.la { letter-spacing: 0 !important }
+.rqpdf h1 span { font-family: 'IBM Plex Sans Arabic', sans-serif }
+.rqpdf .meta { color: #888; font-size: 11px; margin-bottom: 10px }
+.rqpdf table { width: 100%; border-collapse: collapse }
+.rqpdf td { border-bottom: 1px solid #E4E2DC; padding: 6px 8px; vertical-align: top }
+.rqpdf td.le { width: 30%; color: #555 } .rqpdf td.la { width: 24%; color: #555; text-align: right; font-family: 'IBM Plex Sans Arabic', sans-serif } .rqpdf td.v { font-weight: 600 }
+.rqpdf tr.sh td { background: #1C1C1C; color: #C9A646; font-weight: 700; padding: 7px 10px } .rqpdf tr.sh td { display: table-cell }
+.rqpdf tr.sh span { display: inline-block; width: 50% } .rqpdf tr.sh span[dir=rtl] { text-align: right; font-family: 'IBM Plex Sans Arabic', sans-serif }
+.rqpdf .foot { margin-top: 18px; text-align: center; font-family: 'Oswald', sans-serif; letter-spacing: .2em; color: #9C7F2C; font-size: 11px }
+@media (max-width: 860px) {
+  .lp-hero-in { grid-template-columns: 1fr; padding: 34px 22px 40px } .lp-hero h1 { font-size: 34px }
+  .lp-stats { grid-template-columns: 1fr 1fr } .lp-levels, .lp-how ol, .lp-plist { grid-template-columns: 1fr }
+  .lp-plist article { flex-direction: column } .rq-grid { grid-template-columns: 1fr } .rq-head { flex-direction: column } .lp-band-cta { justify-items: start }
+}
+@media (max-width: 560px) {
+  .top .in { gap: 8px; padding: 8px 12px } .hlogo { height: 22px } .hacad { font-size: 12px; letter-spacing: .2em }
+  .brand small { display: none } .navbtn { padding: 6px 6px; font-size: 13px } .langsel { padding: 5px 6px; font-size: 13px }
 }

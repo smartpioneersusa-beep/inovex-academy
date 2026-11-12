@@ -1,6 +1,8 @@
 // INOVEX Academy UI text — English, Arabic, Urdu, Hindi. Applies to the Academy only.
 window.I18N = {
   en: {
+    requests: "Training requests",
+    requestTraining: "Request training", e_missing_fields: "Please fill in the required fields.",
     _name: "English", _dir: "ltr",
     academy: "INOVEX Academy", tagline: "Technical training for the coating industry",
     authorised: "Authorised by Wagner Group", association: "In association with Al Qemma Academy",
@@ -47,6 +49,8 @@ window.I18N = {
     footer: "© INOVEX Group LLC · Riyadh"
   },
   ar: {
+    requests: "طلبات التدريب",
+    requestTraining: "طلب تدريب", e_missing_fields: "يرجى تعبئة الحقول المطلوبة.",
     _name: "العربية", _dir: "rtl",
     academy: "أكاديمية INOVEX", tagline: "تدريب تقني لصناعة الطلاء",
     authorised: "معتمدة من مجموعة Wagner", association: "بالشراكة مع أكاديمية القمة",
@@ -93,6 +97,8 @@ window.I18N = {
     footer: "© مجموعة INOVEX · الرياض"
   },
   ur: {
+    requests: "تربیتی درخواستیں",
+    requestTraining: "تربیت کی درخواست", e_missing_fields: "براہِ کرم ضروری خانے پُر کریں۔",
     _name: "اردو", _dir: "rtl",
     academy: "INOVEX اکیڈمی", tagline: "کوٹنگ انڈسٹری کے لیے تکنیکی تربیت",
     authorised: "Wagner گروپ سے منظور شدہ", association: "القمہ اکیڈمی کے اشتراک سے",
@@ -139,6 +145,8 @@ window.I18N = {
     footer: "© INOVEX گروپ · ریاض"
   },
   hi: {
+    requests: "प्रशिक्षण अनुरोध",
+    requestTraining: "प्रशिक्षण अनुरोध", e_missing_fields: "कृपया आवश्यक फ़ील्ड भरें।",
     _name: "हिन्दी", _dir: "ltr",
     academy: "INOVEX अकादमी", tagline: "कोटिंग उद्योग के लिए तकनीकी प्रशिक्षण",
     authorised: "Wagner Group द्वारा अधिकृत", association: "अल क़िम्मा अकादमी के सहयोग से",

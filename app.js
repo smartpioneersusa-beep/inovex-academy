@@ -68,8 +68,9 @@
   });
   function renderNav() {
     const nav = $('#nav');
-    if (!S.token) { nav.innerHTML = `<a class="navbtn" href="#/login">${t('signIn')}</a>`; return; }
-    nav.innerHTML = `<a class="navbtn" href="#/home">${t('myCourses')}</a>` +
+    const req = `<a class="navbtn hide-sm" href="#/request">${t('requestTraining')}</a>`;
+    if (!S.token) { nav.innerHTML = req + `<a class="navbtn" href="#/login">${t('signIn')}</a>`; return; }
+    nav.innerHTML = req + `<a class="navbtn" href="#/home">${t('myCourses')}</a>` +
       (S.user && S.user.admin ? `<a class="navbtn" href="#/admin">${t('admin')}</a>` : '') +
       `<button class="navbtn" id="so">${t('signOut')}</button>`;
     $('#so').onclick = () => { signOut(true); };
@@ -125,6 +126,9 @@
     setProtected(false);
     try {
       if (p[0] === 'cert') return viewCertCheck(p[1] || '');
+      const H = { lang: () => S.lang, signedIn: () => !!S.token, view: view, api: api, t: t };
+      if (!p.length) return IA_PUBLIC.landing(H);
+      if (p[0] === 'request') return IA_PUBLIC.request(H);
       if (!S.token) {
         if (p[0] === 'signup') return viewSignup();
         if (p[0] === 'verify') return viewVerify();
@@ -553,8 +557,8 @@
   async function viewAdmin(tab) {
     tab = tab || 'trainees';
     view(`<p>${t('loading')}</p>`);
-    const [u, r] = await Promise.all([api('adminUsers'), api('adminResults')]);
-    const users = u.users, results = r.results;
+    const [u, r, a] = await Promise.all([api('adminUsers'), api('adminResults'), api('adminApplications').catch(() => ({ applications: [] }))]);
+    const users = u.users, results = r.results, apps = a.applications || [];
     const now = Date.now();
     const state = x => x.status === 'disabled' ? 'disabled' : !x.verified ? 'pending' : (x.expires && new Date(x.expires) < now ? 'expired' : 'active');
     const passedSet = new Set(results.filter(x => x.passed).map(x => x.email));
@@ -562,7 +566,7 @@
       <div class="kpi"><b>${users.filter(x => state(x) === 'active').length}</b><span>${t('active')}</span></div>
       <div class="kpi"><b>${passedSet.size}</b><span>${t('passed')}</span></div>
       <div class="kpi"><b>${results.length}</b><span>${t('attempts')}</span></div></div>`;
-    view(`<h1>${t('admin')}</h1>${kpi}<div class="tabs"><button data-tab="trainees" class="${tab === 'trainees' ? 'on' : ''}">${t('trainees')}</button><button data-tab="results" class="${tab === 'results' ? 'on' : ''}">${t('results')}</button></div>
+    view(`<h1>${t('admin')}</h1>${kpi}<div class="tabs"><button data-tab="trainees" class="${tab === 'trainees' ? 'on' : ''}">${t('trainees')}</button><button data-tab="results" class="${tab === 'results' ? 'on' : ''}">${t('results')}</button><button data-tab="requests" class="${tab === 'requests' ? 'on' : ''}">${t('requests')} (${apps.length})</button></div>
       <div class="toolbar"><input id="q" placeholder="${t('search')}"><button class="btn small dark" id="csv">${t('exportCsv')}</button></div><div class="tablewrap" id="tb"></div>`);
     app.querySelectorAll('[data-tab]').forEach(b => b.onclick = () => viewAdmin(b.getAttribute('data-tab')));
     const draw = () => {
@@ -582,6 +586,10 @@
           }).join('') + `</table>`;
         $('#tb').querySelectorAll('[data-ext]').forEach(b => b.onclick = () => upd(b, { email: b.getAttribute('data-ext'), extendDays: 30 }));
         $('#tb').querySelectorAll('[data-st]').forEach(b => b.onclick = () => upd(b, { email: b.getAttribute('data-st'), status: b.getAttribute('data-v') }));
+      } else if (tab === 'requests') {
+        const rows = apps.filter(x => !q || (x.company + ' ' + x.contact + ' ' + x.email).toLowerCase().indexOf(q) >= 0);
+        $('#tb').innerHTML = `<table class="table"><tr><th>${t('certDate')}</th><th>Ref</th><th>${t('company').replace(/\s*\(.*\)/, '')}</th><th>${t('fullName')}</th><th>${t('email')}</th><th>${t('phone').replace(/\s*\(.*\)/, '')}</th><th>${t('trainees')}</th><th>PDF</th></tr>` +
+          rows.map(x => `<tr><td>${fmtDate(x.time)}</td><td class="mono">${esc(x.ref)}</td><td>${esc(x.company)}</td><td>${esc(x.contact)}</td><td class="mono">${esc(x.email)}</td><td class="mono">${esc(x.phone)}</td><td class="mono">${esc(x.trainees)}</td><td>${x.pdf ? `<a href="${esc(x.pdf)}" target="_blank" rel="noopener">PDF</a>` : ''}</td></tr>`).join('') + `</table>`;
       } else {
         const rows = results.filter(x => !q || (x.name + ' ' + x.email).toLowerCase().indexOf(q) >= 0);
         $('#tb').innerHTML = `<table class="table"><tr><th>${t('certDate')}</th><th>${t('fullName')}</th><th>${t('email')}</th><th>${t('assessment')}</th><th>${t('language')}</th><th>${t('yourScore')}</th><th>${t('status')}</th><th>${t('certId')}</th></tr>` +
@@ -595,7 +603,9 @@
     }
     $('#q').oninput = draw;
     $('#csv').onclick = () => {
-      const rows = tab === 'trainees'
+      const rows = tab === 'requests'
+        ? [['time', 'ref', 'company', 'contact', 'email', 'phone', 'trainees', 'pdf']].concat(apps.map(x => [x.time, x.ref, x.company, x.contact, x.email, x.phone, x.trainees, x.pdf]))
+        : tab === 'trainees'
         ? [['name', 'email', 'company', 'phone', 'created', 'expires', 'status', 'modulesOpened', 'presentation', 'attempts', 'bestScore', 'bestPercent', 'passed']].concat(users.map(x => [x.name, x.email, x.company, x.phone, x.created, x.expires, state(x), x.modulesOpened, x.presentation, x.attempts, x.best ? x.best.score : '', x.best ? x.best.percent : '', x.best ? x.best.passed : '']))
         : [['time', 'name', 'email', 'course', 'lang', 'score', 'total', 'percent', 'passed', 'certificateId']].concat(results.map(x => [x.time, x.name, x.email, x.course, x.lang, x.score, x.total, x.percent, x.passed, x.certificateId]));
       const csv = '﻿' + rows.map(r => r.map(v => '"' + String(v == null ? '' : v).replace(/"/g, '""') + '"').join(',')).join('\r\n');
