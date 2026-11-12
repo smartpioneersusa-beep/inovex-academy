@@ -1,6 +1,7 @@
 // INOVEX Academy UI text — English, Arabic, Urdu, Hindi. Applies to the Academy only.
 window.I18N = {
   en: {
+    adminSignIn: "Admin sign in", adminSub: "Admins sign in with a one-time code sent to their email — no password needed.", certificates: "Certificates", issueCert: "Issue certificate", courseName: "Course / program", certKind: "Certificate type", kCompletion: "Completion", kAttendance: "Attendance", kQualification: "Qualification", optional: "optional", notesLabel: "Internal note", issuedManually: "issued by admin", revoked: "Revoked", valid: "Valid", reinstate: "Reinstate", revoke: "Revoke", certRevoked: "This certificate has been revoked.",
     requests: "Training requests",
     requestTraining: "Request training", e_missing_fields: "Please fill in the required fields.",
     _name: "English", _dir: "ltr",
@@ -49,6 +50,7 @@ window.I18N = {
     footer: "© INOVEX Group LLC · Riyadh"
   },
   ar: {
+    adminSignIn: "دخول المسؤول", adminSub: "يسجّل المسؤولون الدخول برمز لمرة واحدة يُرسل إلى بريدهم — دون كلمة مرور.", certificates: "الشهادات", issueCert: "إصدار شهادة", courseName: "الدورة / البرنامج", certKind: "نوع الشهادة", kCompletion: "إتمام", kAttendance: "حضور", kQualification: "تأهيل", optional: "اختياري", notesLabel: "ملاحظة داخلية", issuedManually: "أصدرها المسؤول", revoked: "ملغاة", valid: "صالحة", reinstate: "إعادة تفعيل", revoke: "إلغاء", certRevoked: "تم إلغاء هذه الشهادة.",
     requests: "طلبات التدريب",
     requestTraining: "طلب تدريب", e_missing_fields: "يرجى تعبئة الحقول المطلوبة.",
     _name: "العربية", _dir: "rtl",
@@ -97,6 +99,7 @@ window.I18N = {
     footer: "© مجموعة INOVEX · الرياض"
   },
   ur: {
+    adminSignIn: "ایڈمن سائن اِن", adminSub: "ایڈمن ای میل پر بھیجے گئے ایک بار کے کوڈ سے سائن اِن کرتے ہیں — پاس ورڈ کی ضرورت نہیں۔", certificates: "سرٹیفکیٹس", issueCert: "سرٹیفکیٹ جاری کریں", courseName: "کورس / پروگرام", certKind: "سرٹیفکیٹ کی قسم", kCompletion: "تکمیل", kAttendance: "حاضری", kQualification: "اہلیت", optional: "اختیاری", notesLabel: "اندرونی نوٹ", issuedManually: "ایڈمن کی طرف سے جاری", revoked: "منسوخ", valid: "درست", reinstate: "بحال کریں", revoke: "منسوخ کریں", certRevoked: "یہ سرٹیفکیٹ منسوخ کر دیا گیا ہے۔",
     requests: "تربیتی درخواستیں",
     requestTraining: "تربیت کی درخواست", e_missing_fields: "براہِ کرم ضروری خانے پُر کریں۔",
     _name: "اردو", _dir: "rtl",
@@ -145,6 +148,7 @@ window.I18N = {
     footer: "© INOVEX گروپ · ریاض"
   },
   hi: {
+    adminSignIn: "एडमिन साइन इन", adminSub: "एडमिन ईमेल पर भेजे गए एक-बार के कोड से साइन इन करते हैं — पासवर्ड की ज़रूरत नहीं।", certificates: "प्रमाणपत्र", issueCert: "प्रमाणपत्र जारी करें", courseName: "कोर्स / कार्यक्रम", certKind: "प्रमाणपत्र प्रकार", kCompletion: "पूर्णता", kAttendance: "उपस्थिति", kQualification: "योग्यता", optional: "वैकल्पिक", notesLabel: "आंतरिक टिप्पणी", issuedManually: "एडमिन द्वारा जारी", revoked: "रद्द", valid: "मान्य", reinstate: "पुनः सक्रिय करें", revoke: "रद्द करें", certRevoked: "यह प्रमाणपत्र रद्द कर दिया गया है।",
     requests: "प्रशिक्षण अनुरोध",
     requestTraining: "प्रशिक्षण अनुरोध", e_missing_fields: "कृपया आवश्यक फ़ील्ड भरें।",
     _name: "हिन्दी", _dir: "ltr",

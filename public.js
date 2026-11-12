@@ -76,6 +76,7 @@
     qemName: L('Al Qemma Training Institute', 'معهد القمة للتدريب', 'القمہ ٹریننگ انسٹیٹیوٹ', 'अल क़िम्मा ट्रेनिंग इंस्टीट्यूट'),
     bandT: L('Ready to train your team?', 'هل أنت مستعد لتدريب فريقك؟', 'کیا آپ اپنی ٹیم کی تربیت کے لیے تیار ہیں؟', 'क्या आप अपनी टीम को प्रशिक्षित करने के लिए तैयार हैं?'),
     bandD: L('Send us your training requirements and we will reply within two working days.', 'أرسل لنا متطلبات التدريب وسنرد خلال يومي عمل.', 'اپنی تربیتی ضروریات بھیجیں، ہم دو کاروباری دنوں میں جواب دیں گے۔', 'अपनी प्रशिक्षण आवश्यकताएँ भेजें, हम दो कार्य दिवसों में उत्तर देंगे।'),
+    call: L('Call', 'اتصال', 'کال کریں', 'कॉल करें'),
     formats: L('Theory · Practical · Both — at INOVEX Academy or at your factory', 'نظري · عملي · كلاهما — في أكاديمية INOVEX أو في مصنعك', 'نظری · عملی · دونوں — INOVEX اکیڈمی یا آپ کی فیکٹری میں', 'सिद्धांत · व्यावहारिक · दोनों — INOVEX अकादमी या आपकी फ़ैक्टरी में')
   };
   const FIELDS = [
@@ -177,7 +178,7 @@
     send: L('Send request', 'إرسال الطلب', 'درخواست بھیجیں', 'अनुरोध भेजें'),
     sending: L('Sending…', 'جارٍ الإرسال…', 'بھیجا جا رہا ہے…', 'भेजा जा रहा है…'),
     fix: L('Please complete the highlighted fields.', 'يرجى إكمال الحقول المحددة.', 'براہِ کرم نمایاں خانے مکمل کریں۔', 'कृपया चिह्नित फ़ील्ड पूरे करें।'),
-    netErr: L('Could not send. Check your connection and try again, or email info@inovex-group.com.', 'تعذر الإرسال. تحقق من الاتصال وأعد المحاولة، أو راسل info@inovex-group.com.', 'بھیجا نہیں جا سکا۔ کنکشن چیک کریں یا info@inovex-group.com پر ای میل کریں۔', 'भेजा नहीं जा सका। कनेक्शन जाँचें या info@inovex-group.com पर ईमेल करें।'),
+    netErr: L('Could not send. Check your connection and try again, or email j.alnajar@inovex-group.com.', 'تعذر الإرسال. تحقق من الاتصال وأعد المحاولة، أو راسل j.alnajar@inovex-group.com.', 'بھیجا نہیں جا سکا۔ کنکشن چیک کریں یا j.alnajar@inovex-group.com پر ای میل کریں۔', 'भेजा नहीं जा सका। कनेक्शन जाँचें या j.alnajar@inovex-group.com पर ईमेल करें।'),
     doneT: L('Thank you — request received', 'شكراً — تم استلام طلبك', 'شکریہ — درخواست موصول ہو گئی', 'धन्यवाद — अनुरोध प्राप्त हुआ'),
     doneD: L('We sent a copy to your email. Our Academy coordinator will contact you within two working days.', 'أرسلنا نسخة إلى بريدك. سيتواصل معك منسق الأكاديمية خلال يومي عمل.', 'ہم نے ایک کاپی آپ کی ای میل پر بھیج دی ہے۔ اکیڈمی کوآرڈینیٹر دو کاروباری دنوں میں رابطہ کرے گا۔', 'हमने एक प्रति आपके ईमेल पर भेज दी है। अकादमी समन्वयक दो कार्य दिवसों में संपर्क करेगा।'),
     ref: L('Reference', 'الرقم المرجعي', 'حوالہ نمبر', 'संदर्भ संख्या'),
@@ -242,7 +243,8 @@
         </div></section>
       <section class="lp-band"><div><h2>${g(P.bandT)}</h2><p>${g(P.bandD)}</p></div>
         <div class="lp-band-cta"><a class="btn gold" href="#/request">${g(P.ctaRequest)}</a>
-        <span class="mono">+966 53 300 9892 · info@inovex-group.com</span></div></section>`);
+        <div class="lp-contact"><a class="btn wa" href="https://wa.me/966509620944" target="_blank" rel="noopener">WhatsApp</a><a class="btn callb" href="tel:+966509620944">${g(P.call)} <span class="mono">+966 50 962 0944</span></a></div>
+        <a class="lp-mail mono" href="mailto:j.alnajar@inovex-group.com">j.alnajar@inovex-group.com</a></div></section>`);
   }
 
   /* ---------------------------------------------------------------- request form */

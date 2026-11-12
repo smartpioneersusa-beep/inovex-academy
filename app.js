@@ -129,6 +129,7 @@
       const H = { lang: () => S.lang, signedIn: () => !!S.token, view: view, api: api, t: t };
       if (!p.length) return IA_PUBLIC.landing(H);
       if (p[0] === 'request') return IA_PUBLIC.request(H);
+      if (p[0] === 'admin-login') return viewAdminLogin();
       if (!S.token) {
         if (p[0] === 'signup') return viewSignup();
         if (p[0] === 'verify') return viewVerify();
@@ -201,7 +202,7 @@
   }
   function viewLogin() {
     view(`<div class="card auth"><h2>${t('signIn')}</h2>${msgBox()}${loginForm()}
-      <div class="links"><span>${t('noAccount')}</span><a href="#/signup">${t('createAccount')}</a><a href="#/forgot">${t('forgot')}</a></div></div>`);
+      <div class="links"><span>${t('noAccount')}</span><a href="#/signup">${t('createAccount')}</a><a href="#/forgot">${t('forgot')}</a><a href="#/admin-login">${t('adminSignIn')}</a></div></div>`);
     bindLogin();
   }
   function viewSignup() {
@@ -490,28 +491,35 @@
   }
   async function certificatePdf(d) {
     const off = $('#offscreen');
-    const local = S.lang !== 'en';
+    const local = S.lang !== 'en' && !d.manual;
+    const type = d.type || 'Completion';
+    const head = { Completion: 'CERTIFICATE OF COMPLETION', Attendance: 'CERTIFICATE OF ATTENDANCE', Qualification: 'CERTIFICATE OF QUALIFICATION' }[type] || 'CERTIFICATE OF COMPLETION';
+    const verb = { Completion: 'has successfully completed the course', Attendance: 'has attended the training program', Qualification: 'has been qualified in' }[type] || 'has successfully completed the course';
     const enTitle = d.courseTitleEn || (d.courseId === 'PC-101' ? 'Powder Coating Fundamentals' : d.courseTitle);
+    const courseLine = d.courseId && d.courseId !== enTitle ? `${esc(d.courseId)} — ${esc(enTitle)}` : esc(enTitle);
+    const scoreCell = d.score !== undefined && d.score !== '' && d.score !== null
+      ? `<div>Assessment score<b>${d.total ? `${d.score} / ${d.total} (${d.percent}%)` : esc(d.score)}</b></div>` : (d.company ? `<div>Company<b style="font-family:Inter,sans-serif">${esc(d.company)}</b></div>` : '<div></div>');
     off.innerHTML = `<div class="certpage" id="cp"><div class="cert"><div class="in">
-      <div class="top1"><i>I</i>INOVEX ACADEMY</div>
-      <h1>CERTIFICATE OF COMPLETION</h1>${local ? `<div class="tl">${esc(t('certTitle'))}</div>` : '<div class="tl">&nbsp;</div>'}
+      <div class="clogos"><img src="img/inovex.png" alt=""><span>ACADEMY</span></div>
+      <h1>${head}</h1>${local ? `<div class="tl">${esc(t('certTitle'))}</div>` : '<div class="tl">&nbsp;</div>'}
       <div style="font-size:18px;color:#444">This certifies that</div>${local ? `<div dir="${I18N[S.lang]._dir}" style="font-size:16px;color:#777">${esc(t('certBody'))}</div>` : ''}
       <div class="nm">${esc(d.name)}</div>
-      <div style="font-size:18px;color:#444">has successfully completed the course</div>${local ? `<div dir="${I18N[S.lang]._dir}" style="font-size:16px;color:#777">${esc(t('certCompleted'))}</div>` : ''}
-      <div class="cr">${esc(d.courseId)} — ${esc(enTitle)}</div>${local ? `<div class="crl" dir="${I18N[S.lang]._dir}">${esc(d.courseTitle)}</div>` : ''}
-      <div class="partners">Authorised by Wagner Group · In association with Al Qemma Academy</div>
-      <div class="row"><div>${'Assessment score'}<b>${d.score} / ${d.total} (${d.percent}%)</b></div><div>Date<b>${fmtDate(d.date, 'en')}</b></div>
+      <div style="font-size:18px;color:#444">${verb}</div>${local ? `<div dir="${I18N[S.lang]._dir}" style="font-size:16px;color:#777">${esc(t('certCompleted'))}</div>` : ''}
+      <div class="cr">${courseLine}</div>${local ? `<div class="crl" dir="${I18N[S.lang]._dir}">${esc(d.courseTitle)}</div>` : ''}
+      <div class="partners"><span>Authorised by</span><img src="img/wagner.jpg" alt="WAGNER" class="w"><span>In association with</span><img src="img/alqemma.png" alt="Al Qemma" class="q"><b>Al Qemma Training Institute</b></div>
+      <div class="row">${scoreCell}<div>Date<b>${fmtDate(d.date, 'en')}</b></div>
         <div>Certificate ID<b>${esc(d.certificateId)}</b></div><div class="sig">Academy Director<br><span style="font-size:12px;color:#666">INOVEX Group LLC · Riyadh</span></div></div>
-      <div style="position:absolute;left:0;right:0;bottom:16px;font-size:11px;color:#888">Verify: ${location.origin}${location.pathname}#/cert/${esc(d.certificateId)}</div>
+      <div style="position:absolute;left:0;right:0;bottom:16px;font-size:11px;color:#888">Verify: academy.inovex-group.com/#/cert/${esc(d.certificateId)}</div>
     </div></div></div>`;
-    const lang = S.lang; const dir = document.documentElement.dir;
+    const dir = document.documentElement.dir;
     document.documentElement.dir = 'ltr';
     try {
+      await Promise.all([...off.querySelectorAll('img')].map(i => i.complete ? 0 : new Promise(r => { i.onload = i.onerror = r; })));
       const canvas = await snap($('#cp'));
       const pdf = new jspdf.jsPDF({ orientation: 'landscape', unit: 'mm', format: 'a4' });
       pdf.addImage(canvas.toDataURL('image/jpeg', 0.92), 'JPEG', 0, 0, 297, 210);
-      pdf.save(`INOVEX_Academy_Certificate_${d.courseId}_${d.certificateId}.pdf`);
-    } finally { document.documentElement.dir = dir; off.innerHTML = ''; S.lang = lang; }
+      pdf.save(`INOVEX_Academy_Certificate_${d.certificateId}.pdf`);
+    } finally { document.documentElement.dir = dir; off.innerHTML = ''; }
   }
   async function resultsPdf(d) {
     const off = $('#offscreen');
@@ -539,6 +547,25 @@
   }
 
   /* ---------------------------------------------------------------- certificate check (public) */
+  function viewAdminLogin() {
+    view(`<div class="card auth"><div class="pill gold">${t('admin')}</div><h2 style="margin-top:10px">${t('adminSignIn')}</h2><p class="hint">${t('adminSub')}</p>${msgBox()}
+      <form id="af1"><label class="field"><span>${t('email')}</span><input name="email" type="email" required dir="ltr" value="info@inovex-group.com" autocomplete="username"></label>
+      <button class="btn dark" style="width:100%">${t('sendCode')}</button></form>
+      <form id="af2" class="hidden" style="margin-top:16px"><label class="field"><span>${t('code')}</span><input class="code" name="code" inputmode="numeric" maxlength="6" required autocomplete="one-time-code"></label>
+      <button class="btn gold" style="width:100%">${t('signIn')}</button></form>
+      <div class="links"><a href="#/login">${t('back')}</a></div></div>`);
+    let email = '';
+    $('#af1').onsubmit = async e => {
+      e.preventDefault(); const f = e.target, b = f.querySelector('button'); busy(b, true);
+      try { email = f.email.value.trim().toLowerCase(); await api('adminCode', { email: email }); $('#af2').classList.remove('hidden'); b.textContent = t('resend'); f.insertAdjacentHTML('afterend', `<div class="msg ok" style="margin-top:12px">${t('codeSent')}</div>`); $('#af2').code.focus(); }
+      catch (err) { showErr(f, err); } finally { busy(b, false); }
+    };
+    $('#af2').onsubmit = async e => {
+      e.preventDefault(); const f = e.target, b = f.querySelector('button'); busy(b, true);
+      try { const r = await api('adminLogin', { email: email, code: f.code.value }); S.token = r.token; S.user = r.user; store.set('token', r.token); applyLang(); go('/admin'); }
+      catch (err) { showErr(f, err); busy(b, false); }
+    };
+  }
   function viewCertCheck(id) {
     view(`<div class="card auth"><h2>${t('verifyCert')}</h2><form id="cf"><label class="field"><span>${t('certId')}</span><input name="id" class="mono" value="${esc(decodeURIComponent(id))}" required></label>
       <button class="btn gold" style="width:100%">${t('check')}</button></form><div id="cr" style="margin-top:14px"></div></div>`);
@@ -546,7 +573,8 @@
       const out = $('#cr'); out.innerHTML = t('loading');
       try {
         const r = await api('verifyCert', { id: $('#cf').id.value });
-        out.innerHTML = `<div class="msg ok"><b>✓ ${t('certValid')}</b><br>${esc(r.name)} · <span class="mono">${esc(r.course)}</span> · ${fmtDate(r.date)} · <span class="mono">${r.percent}%</span></div>`;
+        out.innerHTML = r.revoked ? `<div class="msg err"><b>✗ ${t('certRevoked')}</b></div>` :
+          `<div class="msg ok"><b>✓ ${t('certValid')}</b><br>${esc(r.name)}${r.company ? ' · ' + esc(r.company) : ''} · <span class="mono">${esc(r.course)}</span> · ${fmtDate(r.date)}${r.percent !== '' && r.percent != null ? ` · <span class="mono">${esc(r.percent)}${String(r.percent).indexOf('%') < 0 && !isNaN(r.percent) ? '%' : ''}</span>` : ''}<br><span class="hint">${t('certificate')}: ${esc(r.type || 'Completion')}</span></div>`;
       } catch (e) { out.innerHTML = `<div class="msg err">${e.message === 'not_found' ? t('certInvalid') : errText(e)}</div>`; }
     };
     $('#cf').onsubmit = e => { e.preventDefault(); run(); };
@@ -557,8 +585,8 @@
   async function viewAdmin(tab) {
     tab = tab || 'trainees';
     view(`<p>${t('loading')}</p>`);
-    const [u, r, a] = await Promise.all([api('adminUsers'), api('adminResults'), api('adminApplications').catch(() => ({ applications: [] }))]);
-    const users = u.users, results = r.results, apps = a.applications || [];
+    const [u, r, a, cz] = await Promise.all([api('adminUsers'), api('adminResults'), api('adminApplications').catch(() => ({ applications: [] })), tab === 'certs' ? api('adminCerts') : Promise.resolve({ certificates: [] })]);
+    const users = u.users, results = r.results, apps = a.applications || [], certs = cz.certificates || [];
     const now = Date.now();
     const state = x => x.status === 'disabled' ? 'disabled' : !x.verified ? 'pending' : (x.expires && new Date(x.expires) < now ? 'expired' : 'active');
     const passedSet = new Set(results.filter(x => x.passed).map(x => x.email));
@@ -566,7 +594,7 @@
       <div class="kpi"><b>${users.filter(x => state(x) === 'active').length}</b><span>${t('active')}</span></div>
       <div class="kpi"><b>${passedSet.size}</b><span>${t('passed')}</span></div>
       <div class="kpi"><b>${results.length}</b><span>${t('attempts')}</span></div></div>`;
-    view(`<h1>${t('admin')}</h1>${kpi}<div class="tabs"><button data-tab="trainees" class="${tab === 'trainees' ? 'on' : ''}">${t('trainees')}</button><button data-tab="results" class="${tab === 'results' ? 'on' : ''}">${t('results')}</button><button data-tab="requests" class="${tab === 'requests' ? 'on' : ''}">${t('requests')} (${apps.length})</button></div>
+    view(`<h1>${t('admin')}</h1>${kpi}<div class="tabs"><button data-tab="trainees" class="${tab === 'trainees' ? 'on' : ''}">${t('trainees')}</button><button data-tab="results" class="${tab === 'results' ? 'on' : ''}">${t('results')}</button><button data-tab="requests" class="${tab === 'requests' ? 'on' : ''}">${t('requests')} (${apps.length})</button><button data-tab="certs" class="${tab === 'certs' ? 'on' : ''}">${t('certificates')}</button></div>
       <div class="toolbar"><input id="q" placeholder="${t('search')}"><button class="btn small dark" id="csv">${t('exportCsv')}</button></div><div class="tablewrap" id="tb"></div>`);
     app.querySelectorAll('[data-tab]').forEach(b => b.onclick = () => viewAdmin(b.getAttribute('data-tab')));
     const draw = () => {
@@ -586,6 +614,43 @@
           }).join('') + `</table>`;
         $('#tb').querySelectorAll('[data-ext]').forEach(b => b.onclick = () => upd(b, { email: b.getAttribute('data-ext'), extendDays: 30 }));
         $('#tb').querySelectorAll('[data-st]').forEach(b => b.onclick = () => upd(b, { email: b.getAttribute('data-st'), status: b.getAttribute('data-v') }));
+      } else if (tab === 'certs') {
+        const rows = certs.filter(x => !q || (x.name + ' ' + x.email + ' ' + x.company + ' ' + x.certificateId + ' ' + x.course).toLowerCase().indexOf(q) >= 0);
+        $('#tb').innerHTML = `<details class="issue" ${certs.length ? '' : 'open'}><summary class="btn small gold">＋ ${t('issueCert')}</summary>
+          <form id="icf" class="issue-grid"><label class="field"><span>${t('fullName')}</span><input name="name" required maxlength="100"></label>
+          <label class="field"><span>${t('company').replace(/\s*\(.*\)/, '')}</span><input name="company" maxlength="120"></label>
+          <label class="field"><span>${t('email').replace(/\s*\(.*\)/, '')}</span><input name="email" type="email" dir="ltr"></label>
+          <label class="field"><span>${t('courseName')}</span><input name="course" required maxlength="160" value="Powder Coating Fundamentals"></label>
+          <label class="field"><span>${t('certKind')}</span><select name="type" class="sel"><option value="Completion">${t('kCompletion')}</option><option value="Attendance">${t('kAttendance')}</option><option value="Qualification">${t('kQualification')}</option></select></label>
+          <label class="field"><span>${t('certDate')}</span><input name="date" type="date" value="${new Date().toISOString().slice(0, 10)}"></label>
+          <label class="field"><span>${t('yourScore')} (${t('optional')})</span><input name="score" maxlength="20" placeholder="e.g. 92%"></label>
+          <label class="field"><span>${t('notesLabel')}</span><input name="note" maxlength="300"></label>
+          <div><button class="btn dark">${t('issueCert')}</button></div></form></details>
+          <table class="table"><tr><th>${t('certId')}</th><th>${t('fullName')}</th><th>${t('courseName')}</th><th>${t('certKind')}</th><th>${t('certDate')}</th><th>${t('yourScore')}</th><th>${t('status')}</th><th></th></tr>` +
+          rows.map((x, i) => `<tr><td class="mono">${esc(x.certificateId)}</td><td>${esc(x.name)}${x.company ? `<div class="hint">${esc(x.company)}</div>` : ''}</td><td>${esc(x.course)}<div class="hint">${x.source === 'online' ? 'online' : t('issuedManually')}</div></td>
+            <td>${esc(x.type)}</td><td>${fmtDate(x.date)}</td><td class="mono">${esc(x.score || '')}</td>
+            <td><span class="pill ${x.status === 'revoked' ? 'bad' : 'ok'}">${x.status === 'revoked' ? t('revoked') : t('valid')}</span></td>
+            <td style="white-space:nowrap"><button class="btn small gold" data-cpdf="${i}">PDF</button> <button class="btn small ghost" data-cst="${esc(x.certificateId)}" data-v="${x.status === 'revoked' ? 'valid' : 'revoked'}">${x.status === 'revoked' ? t('reinstate') : t('revoke')}</button></td></tr>`).join('') + `</table>`;
+        $('#icf').onsubmit = async e => {
+          e.preventDefault(); const f = e.target, b = f.querySelector('button'); busy(b, true);
+          try {
+            const res = await api('adminIssueCert', { name: f.name.value, company: f.company.value, email: f.email.value, course: f.course.value, type: f.type.value, date: f.date.value, score: f.score.value, note: f.note.value });
+            const c = res.certificate;
+            await certificatePdf({ manual: true, name: c.name, courseTitle: c.course, courseTitleEn: c.course, type: c.type, date: c.date, score: c.score, company: c.company, certificateId: c.certificateId });
+            viewAdmin('certs');
+          } catch (err) { alertless(errText(err)); busy(b, false); }
+        };
+        $('#tb').querySelectorAll('[data-cpdf]').forEach(b => b.onclick = async () => {
+          const x = rows[Number(b.getAttribute('data-cpdf'))]; busy(b, true);
+          try {
+            if (x.source === 'online') { const sc = String(x.score).split('/'); await certificatePdf({ manual: true, name: x.name, courseId: x.course, courseTitle: x.course, type: 'Completion', date: x.date, score: sc[0], total: sc[1], percent: x.percent, certificateId: x.certificateId }); }
+            else await certificatePdf({ manual: true, name: x.name, courseTitle: x.course, courseTitleEn: x.course, type: x.type, date: x.date, score: x.score, company: x.company, certificateId: x.certificateId });
+          } finally { busy(b, false); }
+        });
+        $('#tb').querySelectorAll('[data-cst]').forEach(b => b.onclick = async () => {
+          busy(b, true);
+          try { await api('adminCertStatus', { id: b.getAttribute('data-cst'), status: b.getAttribute('data-v') }); viewAdmin('certs'); } catch (err) { alertless(errText(err)); busy(b, false); }
+        });
       } else if (tab === 'requests') {
         const rows = apps.filter(x => !q || (x.company + ' ' + x.contact + ' ' + x.email).toLowerCase().indexOf(q) >= 0);
         $('#tb').innerHTML = `<table class="table"><tr><th>${t('certDate')}</th><th>Ref</th><th>${t('company').replace(/\s*\(.*\)/, '')}</th><th>${t('fullName')}</th><th>${t('email')}</th><th>${t('phone').replace(/\s*\(.*\)/, '')}</th><th>${t('trainees')}</th><th>PDF</th></tr>` +
@@ -603,7 +668,9 @@
     }
     $('#q').oninput = draw;
     $('#csv').onclick = () => {
-      const rows = tab === 'requests'
+      const rows = tab === 'certs'
+        ? [['certificateId', 'name', 'company', 'email', 'course', 'type', 'date', 'score', 'status', 'source']].concat(certs.map(x => [x.certificateId, x.name, x.company, x.email, x.course, x.type, x.date, x.score, x.status, x.source]))
+        : tab === 'requests'
         ? [['time', 'ref', 'company', 'contact', 'email', 'phone', 'trainees', 'pdf']].concat(apps.map(x => [x.time, x.ref, x.company, x.contact, x.email, x.phone, x.trainees, x.pdf]))
         : tab === 'trainees'
         ? [['name', 'email', 'company', 'phone', 'created', 'expires', 'status', 'modulesOpened', 'presentation', 'attempts', 'bestScore', 'bestPercent', 'passed']].concat(users.map(x => [x.name, x.email, x.company, x.phone, x.created, x.expires, state(x), x.modulesOpened, x.presentation, x.attempts, x.best ? x.best.score : '', x.best ? x.best.percent : '', x.best ? x.best.passed : '']))
