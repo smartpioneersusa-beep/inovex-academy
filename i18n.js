@@ -201,3 +201,43 @@ window.I18N = {
     footer: "© INOVEX Group · रियाद"
   }
 };
+
+/* admin management, editing and company manager dashboard */
+(function (add) { Object.keys(add).forEach(l => Object.assign(window.I18N[l], add[l])); })({
+  en: { edit: "Edit", del: "Delete", save: "Save", cancel: "Cancel", confirmDel: "Delete this item? This cannot be undone.", alsoResults: "Also delete this trainee's quiz results (their online certificates will stop verifying)",
+    admins: "Admins", addAdmin: "Add admin", adminDomain: "Only @inovex-group.com addresses can be admins.", owner: "Main admin", you: "You", remove: "Remove",
+    companiesTab: "Companies", addCompany: "Add company", managerEmail: "Manager email", managerName: "Manager name", manager: "Company manager", managerEmailsHint: "Several managers: separate with commas",
+    approve: "Approve", approveT: "Approve training request", approveD: "The company manager can follow the team's progress and download or print certificates. Access codes are created for the trainees.",
+    approved: "Approved", rNew: "New", rejected: "Rejected", closed: "Closed", notify: "Email the access codes and dashboard link to the manager", approvedOk: "Approved. Access codes: {codes}",
+    dashboard: "Company dashboard", managerSignIn: "Company manager sign-in", managerSub: "Use the manager email registered with INOVEX Academy. We email you a one-time code.", managerLink: "Company manager? Open your team dashboard",
+    print: "Print", downloadAll: "Download all certificates", teamProgress: "Team progress", noTrainees: "No trainees have activated your company's access codes yet.", seatsUsed: "Seats used",
+    lastActivity: "Last activity", avgProgress: "Average progress", noCerts: "No certificates yet.", viewAs: "Viewing company", refsHint: "Request references (TR-…), comma-separated",
+    e_admin_domain: "Only @inovex-group.com addresses can be admins.", e_cant_remove: "This account can't be removed.", e_exists: "This name is already used." },
+  ar: { edit: "تعديل", del: "حذف", save: "حفظ", cancel: "إلغاء", confirmDel: "حذف هذا العنصر؟ لا يمكن التراجع عن ذلك.", alsoResults: "حذف نتائج اختبارات المتدرب أيضاً (لن يمكن التحقق من شهاداته الإلكترونية)",
+    admins: "المشرفون", addAdmin: "إضافة مشرف", adminDomain: "يجب أن يكون بريد المشرف على النطاق ‎@inovex-group.com.", owner: "المشرف الرئيسي", you: "أنت", remove: "إزالة",
+    companiesTab: "الشركات", addCompany: "إضافة شركة", managerEmail: "بريد مدير الشركة", managerName: "اسم مدير الشركة", manager: "مدير الشركة", managerEmailsHint: "لأكثر من مدير: افصل بفواصل",
+    approve: "موافقة", approveT: "الموافقة على طلب التدريب", approveD: "يستطيع مدير الشركة متابعة تقدّم الفريق وتنزيل الشهادات وطباعتها. تُنشأ رموز وصول للمتدربين.",
+    approved: "تمت الموافقة", rNew: "جديد", rejected: "مرفوض", closed: "مغلق", notify: "إرسال رموز الوصول ورابط اللوحة إلى مدير الشركة بالبريد", approvedOk: "تمت الموافقة. رموز الوصول: {codes}",
+    dashboard: "لوحة الشركة", managerSignIn: "دخول مدير الشركة", managerSub: "استخدم بريد المدير المسجّل لدى أكاديمية INOVEX، وسنرسل لك رمزاً لمرة واحدة.", managerLink: "مدير شركة؟ افتح لوحة فريقك",
+    print: "طباعة", downloadAll: "تنزيل جميع الشهادات", teamProgress: "تقدّم الفريق", noTrainees: "لم يفعّل أي متدرب رموز الوصول الخاصة بشركتكم بعد.", seatsUsed: "المقاعد المستخدمة",
+    lastActivity: "آخر نشاط", avgProgress: "متوسط التقدّم", noCerts: "لا توجد شهادات بعد.", viewAs: "عرض الشركة", refsHint: "أرقام الطلبات (TR-…) مفصولة بفواصل",
+    e_admin_domain: "يجب أن يكون بريد المشرف على النطاق ‎@inovex-group.com.", e_cant_remove: "لا يمكن إزالة هذا الحساب.", e_exists: "هذا الاسم مستخدم بالفعل." },
+  ur: { edit: "ترمیم", del: "حذف کریں", save: "محفوظ کریں", cancel: "منسوخ", confirmDel: "یہ آئٹم حذف کریں؟ اسے واپس نہیں لایا جا سکتا۔", alsoResults: "اس ٹرینی کے کوئز نتائج بھی حذف کریں (آن لائن سرٹیفکیٹس کی تصدیق نہیں ہو سکے گی)",
+    admins: "ایڈمنز", addAdmin: "ایڈمن شامل کریں", adminDomain: "صرف ‎@inovex-group.com ای میل والے ایڈمن بن سکتے ہیں۔", owner: "مرکزی ایڈمن", you: "آپ", remove: "ہٹائیں",
+    companiesTab: "کمپنیاں", addCompany: "کمپنی شامل کریں", managerEmail: "مینیجر کی ای میل", managerName: "مینیجر کا نام", manager: "کمپنی مینیجر", managerEmailsHint: "ایک سے زیادہ مینیجر: کوما سے الگ کریں",
+    approve: "منظور کریں", approveT: "تربیتی درخواست کی منظوری", approveD: "کمپنی مینیجر ٹیم کی پیش رفت دیکھ سکتا ہے اور سرٹیفکیٹس ڈاؤن لوڈ یا پرنٹ کر سکتا ہے۔ ٹرینیز کے لیے رسائی کوڈ بنائے جاتے ہیں۔",
+    approved: "منظور شدہ", rNew: "نئی", rejected: "مسترد", closed: "بند", notify: "رسائی کوڈ اور ڈیش بورڈ لنک مینیجر کو ای میل کریں", approvedOk: "منظور ہو گیا۔ رسائی کوڈ: {codes}",
+    dashboard: "کمپنی ڈیش بورڈ", managerSignIn: "کمپنی مینیجر سائن اِن", managerSub: "INOVEX اکیڈمی میں رجسٹرڈ مینیجر ای میل استعمال کریں۔ ہم آپ کو ایک وقتی کوڈ بھیجیں گے۔", managerLink: "کمپنی مینیجر؟ اپنی ٹیم کا ڈیش بورڈ کھولیں",
+    print: "پرنٹ", downloadAll: "تمام سرٹیفکیٹس ڈاؤن لوڈ کریں", teamProgress: "ٹیم کی پیش رفت", noTrainees: "ابھی تک کسی ٹرینی نے آپ کی کمپنی کا رسائی کوڈ فعال نہیں کیا۔", seatsUsed: "استعمال شدہ نشستیں",
+    lastActivity: "آخری سرگرمی", avgProgress: "اوسط پیش رفت", noCerts: "ابھی کوئی سرٹیفکیٹ نہیں۔", viewAs: "کمپنی دیکھیں", refsHint: "درخواست نمبر (TR-…) کوما سے الگ",
+    e_admin_domain: "صرف ‎@inovex-group.com ای میل والے ایڈمن بن سکتے ہیں۔", e_cant_remove: "یہ اکاؤنٹ ہٹایا نہیں جا سکتا۔", e_exists: "یہ نام پہلے سے استعمال میں ہے۔" },
+  hi: { edit: "संपादित करें", del: "हटाएँ", save: "सहेजें", cancel: "रद्द करें", confirmDel: "यह आइटम हटाएँ? इसे वापस नहीं लाया जा सकता।", alsoResults: "इस प्रशिक्षु के क्विज़ परिणाम भी हटाएँ (ऑनलाइन प्रमाणपत्रों का सत्यापन नहीं होगा)",
+    admins: "एडमिन", addAdmin: "एडमिन जोड़ें", adminDomain: "केवल @inovex-group.com ईमेल वाले एडमिन बन सकते हैं।", owner: "मुख्य एडमिन", you: "आप", remove: "हटाएँ",
+    companiesTab: "कंपनियाँ", addCompany: "कंपनी जोड़ें", managerEmail: "मैनेजर ईमेल", managerName: "मैनेजर का नाम", manager: "कंपनी मैनेजर", managerEmailsHint: "एक से अधिक मैनेजर: कॉमा से अलग करें",
+    approve: "स्वीकृत करें", approveT: "प्रशिक्षण अनुरोध स्वीकृत करें", approveD: "कंपनी मैनेजर टीम की प्रगति देख सकता है और प्रमाणपत्र डाउनलोड या प्रिंट कर सकता है। प्रशिक्षुओं के लिए एक्सेस कोड बनाए जाते हैं।",
+    approved: "स्वीकृत", rNew: "नया", rejected: "अस्वीकृत", closed: "बंद", notify: "एक्सेस कोड और डैशबोर्ड लिंक मैनेजर को ईमेल करें", approvedOk: "स्वीकृत। एक्सेस कोड: {codes}",
+    dashboard: "कंपनी डैशबोर्ड", managerSignIn: "कंपनी मैनेजर साइन-इन", managerSub: "INOVEX अकादमी में पंजीकृत मैनेजर ईमेल का उपयोग करें। हम आपको एक बार का कोड ईमेल करेंगे।", managerLink: "कंपनी मैनेजर? अपनी टीम का डैशबोर्ड खोलें",
+    print: "प्रिंट", downloadAll: "सभी प्रमाणपत्र डाउनलोड करें", teamProgress: "टीम की प्रगति", noTrainees: "अभी तक किसी प्रशिक्षु ने आपकी कंपनी का एक्सेस कोड सक्रिय नहीं किया है।", seatsUsed: "उपयोग की गई सीटें",
+    lastActivity: "अंतिम गतिविधि", avgProgress: "औसत प्रगति", noCerts: "अभी कोई प्रमाणपत्र नहीं।", viewAs: "कंपनी देखें", refsHint: "अनुरोध संख्या (TR-…), कॉमा से अलग",
+    e_admin_domain: "केवल @inovex-group.com ईमेल वाले एडमिन बन सकते हैं।", e_cant_remove: "यह खाता हटाया नहीं जा सकता।", e_exists: "यह नाम पहले से उपयोग में है।" }
+});

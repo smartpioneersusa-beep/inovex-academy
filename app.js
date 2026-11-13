@@ -74,7 +74,8 @@
     const nav = $('#nav');
     const req = `<a class="navbtn hide-sm" href="#/request">${t('requestTraining')}</a>`;
     if (!S.token) { nav.innerHTML = req + `<a class="navbtn" href="#/login">${t('signIn')}</a>`; return; }
-    nav.innerHTML = req + `<a class="navbtn" href="#/home">${t('myCourses')}</a>` +
+    nav.innerHTML = req + (S.user && S.user.manager && !S.user.access && !S.user.admin ? '' : `<a class="navbtn" href="#/home">${t('myCourses')}</a>`) +
+      (S.user && S.user.manager ? `<a class="navbtn" href="#/manager">${t('dashboard')}</a>` : '') +
       (S.user && S.user.admin ? `<a class="navbtn" href="#/admin">${t('admin')}</a>` : '') +
       `<button class="navbtn" id="so">${t('signOut')}</button>`;
     $('#so').onclick = () => { signOut(true); };
@@ -134,6 +135,7 @@
       if (!p.length) return IA_PUBLIC.landing(H);
       if (p[0] === 'request') return IA_PUBLIC.request(H);
       if (p[0] === 'admin-login') return viewAdminLogin();
+      if (p[0] === 'manager-login') return viewAdminLogin(true);
       if (!S.token) {
         if (p[0] === 'signup') return viewSignup();
         if (p[0] === 'verify') return viewVerify();
@@ -144,6 +146,8 @@
       }
       if (!S.user) await loadMe();
       else if (!S.user.access && !S.user.admin) await loadMe();   // pick up access granted by an admin
+      if (p[0] === 'manager' && (S.user.manager || S.user.admin)) return viewManager(p[1] ? decodeURIComponent(p[1]) : '');
+      if (S.user.manager && !S.user.access && !S.user.admin) return viewManager('');
       if ((p[0] === 'access' && !S.user.access) || (!S.user.access && !S.user.admin)) return viewAccess();
       if (p[0] === 'access') return viewHome();
       if (p[0] === 'admin' && S.user.admin) return viewAdmin();
@@ -200,7 +204,7 @@
   function startSession(r) {
     S.token = r.token; S.user = r.user; store.set('token', r.token); store.set('pending', null);
     if (r.user.lang && r.user.lang !== S.lang && !store.get('lang')) { S.lang = r.user.lang; }
-    applyLang(); go(r.user.access || r.user.admin ? '/home' : '/access');
+    applyLang(); go(r.user.access || r.user.admin ? '/home' : r.user.manager ? '/manager' : '/access');
   }
   function showErr(form, err) {
     let m = form.parentNode.querySelector('.msg'); if (m) m.remove();
@@ -209,7 +213,8 @@
   }
   function viewLogin() {
     view(`<div class="card auth"><h2>${t('signIn')}</h2>${msgBox()}${loginForm()}
-      <div class="links"><span>${t('noAccount')}</span><a href="#/signup">${t('createAccount')}</a><a href="#/forgot">${t('forgot')}</a><a href="#/admin-login">${t('adminSignIn')}</a></div></div>`);
+      <div class="links"><span>${t('noAccount')}</span><a href="#/signup">${t('createAccount')}</a><a href="#/forgot">${t('forgot')}</a><a href="#/admin-login">${t('adminSignIn')}</a></div>
+      <div class="links" style="margin-top:6px"><a href="#/manager-login">${t('managerLink')}</a></div></div>`);
     bindLogin();
   }
   function viewSignup() {
@@ -497,7 +502,27 @@
     await document.fonts.ready;
     return html2canvas(node, { scale: 2, backgroundColor: '#ffffff', useCORS: true, logging: false });
   }
-  async function certificatePdf(d) {
+  async function certificatePdf(d, mode) {
+    const list = Array.isArray(d) ? d : [d];
+    const pdf = new jspdf.jsPDF({ orientation: 'landscape', unit: 'mm', format: 'a4' });
+    for (let i = 0; i < list.length; i++) {
+      const canvas = await certCanvas(list[i]);
+      if (i) pdf.addPage();
+      pdf.addImage(canvas.toDataURL('image/jpeg', 0.92), 'JPEG', 0, 0, 297, 210);
+    }
+    if (mode === 'print') return printPdf(pdf);
+    pdf.save(list.length > 1 ? `INOVEX_Academy_Certificates_${new Date().toISOString().slice(0, 10)}.pdf` : `INOVEX_Academy_Certificate_${list[0].certificateId}.pdf`);
+  }
+  function printPdf(pdf) {
+    pdf.autoPrint();
+    const url = pdf.output('bloburl');
+    let fr = $('#printframe'); if (fr) fr.remove();
+    fr = document.createElement('iframe'); fr.id = 'printframe';
+    fr.style.cssText = 'position:fixed;right:0;bottom:0;width:1px;height:1px;border:0;opacity:0';
+    fr.onload = () => { try { fr.contentWindow.focus(); fr.contentWindow.print(); } catch (e) { window.open(url, '_blank'); } };
+    fr.src = url; document.body.appendChild(fr);
+  }
+  async function certCanvas(d) {
     const off = $('#offscreen');
     const local = S.lang !== 'en' && !d.manual;
     const type = d.type || 'Completion';
@@ -523,10 +548,7 @@
     document.documentElement.dir = 'ltr';
     try {
       await Promise.all([...off.querySelectorAll('img')].map(i => i.complete ? 0 : new Promise(r => { i.onload = i.onerror = r; })));
-      const canvas = await snap($('#cp'));
-      const pdf = new jspdf.jsPDF({ orientation: 'landscape', unit: 'mm', format: 'a4' });
-      pdf.addImage(canvas.toDataURL('image/jpeg', 0.92), 'JPEG', 0, 0, 297, 210);
-      pdf.save(`INOVEX_Academy_Certificate_${d.certificateId}.pdf`);
+      return await snap($('#cp'));
     } finally { document.documentElement.dir = dir; off.innerHTML = ''; }
   }
   async function resultsPdf(d) {
@@ -568,9 +590,9 @@
       catch (err) { showErr(f, err); busy(b, false); }
     };
   }
-  function viewAdminLogin() {
-    view(`<div class="card auth"><div class="pill gold">${t('admin')}</div><h2 style="margin-top:10px">${t('adminSignIn')}</h2><p class="hint">${t('adminSub')}</p>${msgBox()}
-      <form id="af1"><label class="field"><span>${t('email')}</span><input name="email" type="email" required dir="ltr" value="info@inovex-group.com" autocomplete="username"></label>
+  function viewAdminLogin(mgr) {
+    view(`<div class="card auth"><div class="pill gold">${mgr ? t('manager') : t('admin')}</div><h2 style="margin-top:10px">${mgr ? t('managerSignIn') : t('adminSignIn')}</h2><p class="hint">${mgr ? t('managerSub') : t('adminSub')}</p>${msgBox()}
+      <form id="af1"><label class="field"><span>${t('email')}</span><input name="email" type="email" required dir="ltr" value="${mgr ? '' : 'info@inovex-group.com'}" autocomplete="username"></label>
       <button class="btn dark" style="width:100%">${t('sendCode')}</button></form>
       <form id="af2" class="hidden" style="margin-top:16px"><label class="field"><span>${t('code')}</span><input class="code" name="code" inputmode="numeric" maxlength="6" required autocomplete="one-time-code"></label>
       <button class="btn gold" style="width:100%">${t('signIn')}</button></form>
@@ -578,12 +600,12 @@
     let email = '';
     $('#af1').onsubmit = async e => {
       e.preventDefault(); const f = e.target, b = f.querySelector('button'); busy(b, true);
-      try { email = f.email.value.trim().toLowerCase(); await api('adminCode', { email: email }); $('#af2').classList.remove('hidden'); b.textContent = t('resend'); f.insertAdjacentHTML('afterend', `<div class="msg ok" style="margin-top:12px">${t('codeSent')}</div>`); $('#af2').code.focus(); }
+      try { email = f.email.value.trim().toLowerCase(); await api(mgr ? 'managerCode' : 'adminCode', { email: email }); $('#af2').classList.remove('hidden'); b.textContent = t('resend'); f.insertAdjacentHTML('afterend', `<div class="msg ok" style="margin-top:12px">${t('codeSent')}</div>`); $('#af2').code.focus(); }
       catch (err) { showErr(f, err); } finally { busy(b, false); }
     };
     $('#af2').onsubmit = async e => {
       e.preventDefault(); const f = e.target, b = f.querySelector('button'); busy(b, true);
-      try { const r = await api('adminLogin', { email: email, code: f.code.value }); S.token = r.token; S.user = r.user; store.set('token', r.token); applyLang(); go('/admin'); }
+      try { const r = await api(mgr ? 'managerLogin' : 'adminLogin', { email: email, code: f.code.value }); S.token = r.token; S.user = r.user; store.set('token', r.token); applyLang(); go(mgr ? '/manager' : '/admin'); }
       catch (err) { showErr(f, err); busy(b, false); }
     };
   }
@@ -602,44 +624,112 @@
     if (id) run();
   }
 
+  /* ---------------------------------------------------------------- dialogs (edit forms + confirmations) */
+  function dialog(title, fields, opts) {
+    opts = opts || {};
+    return new Promise(resolve => {
+      const back = document.createElement('div'); back.className = 'modal-back';
+      const fld = f => {
+        const v = f.value == null ? '' : f.value;
+        if (f.type === 'select') return `<label class="field"><span>${esc(f.label)}</span><select name="${f.name}" class="sel">${f.options.map(o => `<option value="${esc(o[0])}" ${String(o[0]) === String(v) ? 'selected' : ''}>${esc(o[1])}</option>`).join('')}</select></label>`;
+        if (f.type === 'checkbox') return `<label class="check"><input type="checkbox" name="${f.name}" ${v ? 'checked' : ''}> <span>${esc(f.label)}</span></label>`;
+        if (f.type === 'textarea') return `<label class="field wide"><span>${esc(f.label)}</span><textarea name="${f.name}" rows="3" maxlength="${f.max || 500}">${esc(v)}</textarea></label>`;
+        return `<label class="field"><span>${esc(f.label)}</span><input name="${f.name}" type="${f.type || 'text'}" value="${esc(v)}" ${f.required ? 'required' : ''} ${f.min != null ? `min="${f.min}"` : ''} ${f.max ? `max="${f.max}"` : ''} ${f.ltr ? 'dir="ltr"' : ''} ${f.placeholder ? `placeholder="${esc(f.placeholder)}"` : ''}>${f.hint ? `<small class="hint">${esc(f.hint)}</small>` : ''}</label>`;
+      };
+      back.innerHTML = `<form class="modal" role="dialog" aria-modal="true"><h3>${esc(title)}</h3>${opts.text ? `<p class="hint">${esc(opts.text)}</p>` : ''}
+        <div class="modal-grid">${fields.map(fld).join('')}</div><div class="msg err hidden" id="dlgerr"></div>
+        <div class="modal-actions"><button type="button" class="btn ghost" data-x>${t('cancel')}</button><button class="btn ${opts.danger ? 'danger' : 'gold'}">${esc(opts.ok || t('save'))}</button></div></form>`;
+      document.body.appendChild(back);
+      const form = back.querySelector('form');
+      const close = v => { back.remove(); document.removeEventListener('keydown', onKey); resolve(v); };
+      const onKey = e => { if (e.key === 'Escape') close(null); };
+      document.addEventListener('keydown', onKey);
+      back.querySelector('[data-x]').onclick = () => close(null);
+      back.addEventListener('mousedown', e => { if (e.target === back) close(null); });
+      form.onsubmit = async e => {
+        e.preventDefault();
+        const out = {};
+        fields.forEach(f => { const el = form.elements[f.name]; out[f.name] = f.type === 'checkbox' ? el.checked : el.value; });
+        if (!opts.submit) return close(out);
+        const b = form.querySelector('button:not([data-x])'); busy(b, true);
+        try { close(await opts.submit(out) || out); }
+        catch (err) { const m = $('#dlgerr', back); m.textContent = errText(err); m.classList.remove('hidden'); busy(b, false); }
+      };
+      const first = form.querySelector('input:not([type=checkbox]),select,textarea'); if (first) first.focus();
+    });
+  }
+  const confirmDel = (text, extra) => dialog(t('del'), extra || [], { text: text || t('confirmDel'), ok: t('del'), danger: true });
+  const coName = () => t('company').replace(/\s*\(.*\)/, '');
+  const courseOpts = () => [['*', t('allCourses')], ['PC-101', 'PC-101']];
+  const dateIn = d => d ? new Date(d).toISOString().slice(0, 10) : '';
+  function certData(x) {
+    if (x.source === 'online') { const sc = String(x.score).indexOf('/') > 0 ? String(x.score).split('/') : [x.score, x.total]; return { manual: true, name: x.name, courseId: x.course, courseTitle: x.course, type: x.type || 'Completion', date: x.date, score: sc[0], total: sc[1], percent: x.percent, certificateId: x.certificateId }; }
+    return { manual: true, name: x.name, courseTitle: x.course, courseTitleEn: x.course, type: x.type, date: x.date, score: x.score, company: x.company, certificateId: x.certificateId };
+  }
+
   /* ---------------------------------------------------------------- admin */
   async function viewAdmin(tab) {
     tab = tab || 'trainees';
     view(`<p>${t('loading')}</p>`);
-    const [u, r, a, cz, kz] = await Promise.all([api('adminUsers'), api('adminResults'), api('adminApplications').catch(() => ({ applications: [] })), tab === 'certs' ? api('adminCerts') : Promise.resolve({ certificates: [] }), tab === 'codes' ? api('adminCodes') : Promise.resolve({ codes: [] })]);
-    const users = u.users, results = r.results, apps = a.applications || [], certs = cz.certificates || [], codes = kz.codes || [];
+    const need = (n, call, empty) => tab === n ? call() : Promise.resolve(empty);
+    const [u, r, a, cz, kz, co, ad] = await Promise.all([api('adminUsers'), api('adminResults'), api('adminApplications').catch(() => ({ applications: [] })),
+      need('certs', () => api('adminCerts'), { certificates: [] }), need('codes', () => api('adminCodes'), { codes: [] }),
+      need('companies', () => api('adminCompanies'), { companies: [] }), need('admins', () => api('adminAdmins'), { admins: [] })]);
+    const users = u.users, results = r.results, apps = a.applications || [], certs = cz.certificates || [], codes = kz.codes || [], comps = co.companies || [], admins = ad.admins || [];
     const now = Date.now();
     const state = x => x.status === 'disabled' ? 'disabled' : !x.verified ? 'pending' : x.status === 'awaiting' ? 'awaiting' : (x.expires && new Date(x.expires) < now ? 'expired' : 'active');
     const passedSet = new Set(results.filter(x => x.passed).map(x => x.email));
+    const newReq = apps.filter(x => x.status === 'new').length;
     const kpi = `<div class="kpis"><div class="kpi"><b>${users.length}</b><span>${t('trainees')}</span></div>
       <div class="kpi"><b>${users.filter(x => state(x) === 'active').length}</b><span>${t('active')}</span></div>
       <div class="kpi"><b>${passedSet.size}</b><span>${t('passed')}</span></div>
       <div class="kpi"><b>${results.length}</b><span>${t('attempts')}</span></div></div>`;
-    view(`${msgBox()}<h1>${t('admin')}</h1>${kpi}<div class="tabs"><button data-tab="trainees" class="${tab === 'trainees' ? 'on' : ''}">${t('trainees')}</button><button data-tab="results" class="${tab === 'results' ? 'on' : ''}">${t('results')}</button><button data-tab="requests" class="${tab === 'requests' ? 'on' : ''}">${t('requests')} (${apps.length})</button><button data-tab="certs" class="${tab === 'certs' ? 'on' : ''}">${t('certificates')}</button><button data-tab="codes" class="${tab === 'codes' ? 'on' : ''}">${t('codesTab')}</button></div>
+    const TABS = [['trainees', t('trainees')], ['results', t('results')], ['requests', t('requests') + (newReq ? ` (${newReq})` : '')], ['companies', t('companiesTab')], ['certs', t('certificates')], ['codes', t('codesTab')], ['admins', t('admins')]];
+    view(`${msgBox()}<h1>${t('admin')}</h1>${kpi}<div class="tabs">${TABS.map(x => `<button data-tab="${x[0]}" class="${tab === x[0] ? 'on' : ''}">${x[1]}</button>`).join('')}</div>
       <div class="toolbar"><input id="q" placeholder="${t('search')}"><button class="btn small dark" id="csv">${t('exportCsv')}</button></div><div class="tablewrap" id="tb"></div>`);
     app.querySelectorAll('[data-tab]').forEach(b => b.onclick = () => viewAdmin(b.getAttribute('data-tab')));
+    const reload = msg => { if (msg) S.flash = { ok: msg }; viewAdmin(tab); };
+    const act = async (b, action, data, msg) => { busy(b, true); try { await api(action, data); reload(msg); } catch (e) { alertless(errText(e)); busy(b, false); } };
+    const ED = `class="btn small ghost"`, DL = `class="btn small danger"`;
+    const on = (sel, fn) => $('#tb').querySelectorAll(sel).forEach(b => b.onclick = () => fn(b));
     const draw = () => {
       const q = ($('#q').value || '').toLowerCase();
+      const has = s => !q || String(s).toLowerCase().indexOf(q) >= 0;
       if (tab === 'trainees') {
-        const rows = users.filter(x => !q || (x.name + ' ' + x.email + ' ' + x.company).toLowerCase().indexOf(q) >= 0)
-          .sort((a, b) => String(b.created).localeCompare(String(a.created)));
-        $('#tb').innerHTML = `<table class="table"><tr><th>${t('fullName')}</th><th>${t('email')}</th><th>${t('company').replace(/\s*\(.*\)/, '')}</th><th>${t('created')}</th><th>${t('expires')}</th><th>${t('status')}</th><th>${t('progress')}</th><th>${t('best')}</th><th></th></tr>` +
-          rows.map(x => {
+        const rows = users.filter(x => has(x.name + ' ' + x.email + ' ' + x.company)).sort((a, b) => String(b.created).localeCompare(String(a.created)));
+        $('#tb').innerHTML = `<table class="table"><tr><th>${t('fullName')}</th><th>${t('email')}</th><th>${coName()}</th><th>${t('created')}</th><th>${t('expires')}</th><th>${t('status')}</th><th>${t('progress')}</th><th>${t('best')}</th><th></th></tr>` +
+          rows.map((x, i) => {
             const s = state(x);
             return `<tr><td>${esc(x.name)}</td><td class="mono">${esc(x.email)}</td><td>${esc(x.company)}</td><td>${fmtDate(x.created)}</td>
             <td>${x.expires ? fmtDate(x.expires) + ` <span class="hint">(${daysLeft(x.expires)})</span>` : '—'}</td>
             <td><span class="pill ${s === 'active' ? 'ok' : s === 'pending' ? '' : 'bad'}">${t(s)}</span></td>
             <td class="mono">${x.modulesOpened}/8 ${x.presentation ? '▶' : ''}</td><td class="mono">${x.best ? x.best.score + ' (' + x.best.percent + '%)' + (x.best.passed ? ' ✓' : '') : '—'} <span class="hint">×${x.attempts}</span></td>
-            <td style="white-space:nowrap"><button class="btn small gold" data-ext="${esc(x.email)}">${s === 'awaiting' || s === 'expired' ? t('grant') : t('extend')}</button>
-            <button class="btn small ghost" data-st="${esc(x.email)}" data-v="${x.status === 'disabled' ? 'active' : 'disabled'}">${x.status === 'disabled' ? t('enable') : t('disable')}</button></td></tr>`;
+            <td class="acts"><button class="btn small gold" data-ext="${i}">${s === 'awaiting' || s === 'expired' ? t('grant') : t('extend')}</button>
+            <button ${ED} data-st="${i}">${x.status === 'disabled' ? t('enable') : t('disable')}</button> <button ${ED} data-ed="${i}">${t('edit')}</button> <button ${DL} data-del="${i}">${t('del')}</button></td></tr>`;
           }).join('') + `</table>`;
-        $('#tb').querySelectorAll('[data-ext]').forEach(b => b.onclick = () => upd(b, { email: b.getAttribute('data-ext'), extendDays: 30 }));
-        $('#tb').querySelectorAll('[data-st]').forEach(b => b.onclick = () => upd(b, { email: b.getAttribute('data-st'), status: b.getAttribute('data-v') }));
+        on('[data-ext]', b => act(b, 'adminUpdate', { email: rows[b.dataset.ext].email, extendDays: 30 }));
+        on('[data-st]', b => { const x = rows[b.dataset.st]; act(b, 'adminUpdate', { email: x.email, status: x.status === 'disabled' ? 'active' : 'disabled' }); });
+        on('[data-ed]', async b => {
+          const x = rows[b.dataset.ed];
+          const v = await dialog(t('edit') + ' — ' + x.email, [
+            { name: 'name', label: t('fullName'), value: x.name, required: true }, { name: 'company', label: coName(), value: x.company },
+            { name: 'phone', label: t('phone').replace(/\s*\(.*\)/, ''), value: x.phone, ltr: true },
+            { name: 'expires', label: t('expires'), type: 'date', value: dateIn(x.expires) },
+            { name: 'courses', label: t('courses'), type: 'select', value: x.courses || '*', options: courseOpts() },
+            { name: 'status', label: t('status'), type: 'select', value: x.status === 'disabled' ? 'disabled' : x.status === 'awaiting' ? 'awaiting' : 'active', options: [['active', t('active')], ['awaiting', t('awaiting')], ['disabled', t('disabled')]] }
+          ], { submit: v => api('adminEditUser', Object.assign({ email: x.email }, v)) });
+          if (v) reload(t('saved'));
+        });
+        on('[data-del]', async b => {
+          const x = rows[b.dataset.del];
+          const v = await confirmDel(`${t('confirmDel')} ${x.name} · ${x.email}`, [{ name: 'withResults', label: t('alsoResults'), type: 'checkbox' }]);
+          if (v) act(b, 'adminDeleteUser', { email: x.email, withResults: v.withResults });
+        });
       } else if (tab === 'codes') {
-        const rows = codes.filter(x => !q || (x.code + ' ' + x.company + ' ' + x.requestRef + ' ' + x.redeemedBy).toLowerCase().indexOf(q) >= 0);
+        const rows = codes.filter(x => has(x.code + ' ' + x.company + ' ' + x.requestRef + ' ' + x.redeemedBy));
         const msgText = x => encodeURIComponent(`INOVEX Academy — your access code: ${x.code}\n1) Open https://academy.inovex-group.com/#/signup\n2) Create your account and enter the code (or enter it after signing in).\nAccess: ${x.days} days.\n\nأكاديمية INOVEX — رمز الوصول الخاص بك: ${x.code}\nأنشئ حسابك على الرابط أعلاه وأدخل الرمز.`);
         $('#tb').innerHTML = `<details class="issue" ${codes.length ? '' : 'open'}><summary class="btn small gold">＋ ${t('newCodes')}</summary>
-          <form id="ccf" class="issue-grid"><label class="field"><span>${t('company').replace(/\s*\(.*\)/, '')}</span><input name="company" required maxlength="120"></label>
+          <form id="ccf" class="issue-grid"><label class="field"><span>${coName()}</span><input name="company" required maxlength="120"></label>
           <label class="field"><span>${t('codeKind')}</span><select name="mode" class="sel"><option value="shared">${t('codeShared')}</option><option value="single">${t('codeSingle')}</option></select></label>
           <label class="field"><span>${t('seats')}</span><input name="seats" type="number" min="1" max="500" value="5"></label>
           <label class="field"><span>${t('days')}</span><input name="days" type="number" min="1" max="365" value="30"></label>
@@ -647,31 +737,40 @@
           <label class="field"><span>${t('deadline')} (${t('optional')})</span><input name="validUntil" type="date"></label>
           <label class="field"><span>${t('requestRef')} (${t('optional')})</span><input name="requestRef" maxlength="40" placeholder="TR-…"></label>
           <label class="field"><span>${t('notesLabel')}</span><input name="note" maxlength="300" placeholder="Invoice / PO"></label>
-          <div><button class="btn dark">${t('newCodes')}</button></div></form><div id="newc"></div></details>
-          <table class="table"><tr><th>${t('accessCode')}</th><th>${t('company').replace(/\s*\(.*\)/, '')}</th><th>${t('seats')}</th><th>${t('days')}</th><th>${t('courses')}</th><th>${t('deadline')}</th><th>${t('status')}</th><th></th></tr>` +
-          rows.map(x => `<tr><td class="mono"><b>${esc(x.code)}</b>${x.requestRef ? `<div class="hint">${esc(x.requestRef)}</div>` : ''}</td><td>${esc(x.company)}${x.note ? `<div class="hint">${esc(x.note)}</div>` : ''}</td>
+          <div><button class="btn dark">${t('newCodes')}</button></div></form></details>
+          <table class="table"><tr><th>${t('accessCode')}</th><th>${coName()}</th><th>${t('seats')}</th><th>${t('days')}</th><th>${t('courses')}</th><th>${t('deadline')}</th><th>${t('status')}</th><th></th></tr>` +
+          rows.map((x, i) => `<tr><td class="mono"><b>${esc(x.code)}</b>${x.requestRef ? `<div class="hint">${esc(x.requestRef)}</div>` : ''}</td><td>${esc(x.company)}${x.note ? `<div class="hint">${esc(x.note)}</div>` : ''}</td>
             <td class="mono">${x.used}/${x.seats}${x.redeemedBy ? `<div class="hint" title="${esc(x.redeemedBy)}">${esc(String(x.redeemedBy).split(',').slice(0, 2).join(', '))}${String(x.redeemedBy).split(',').length > 2 ? '…' : ''}</div>` : ''}</td>
             <td class="mono">${x.days}</td><td class="mono">${x.courses === '*' ? t('allCourses') : esc(x.courses)}</td><td>${x.validUntil ? fmtDate(x.validUntil) : '—'}</td>
             <td><span class="pill ${x.status === 'active' && Number(x.used) < Number(x.seats) ? 'ok' : 'bad'}">${x.status !== 'active' ? t('disabled') : Number(x.used) >= Number(x.seats) ? t('usedUp') : t('active')}</span></td>
-            <td style="white-space:nowrap"><button class="btn small ghost" data-copy="${esc(x.code)}">${t('copy')}</button> <a class="btn small ghost" href="mailto:?subject=${encodeURIComponent('INOVEX Academy access code')}&body=${msgText(x)}">${t('email').replace(/\s*\(.*\)/, '')}</a> <a class="btn small wa" href="https://wa.me/?text=${msgText(x)}" target="_blank" rel="noopener">WA</a>
-            <button class="btn small ghost" data-kst="${esc(x.code)}" data-v="${x.status === 'active' ? 'disabled' : 'active'}">${x.status === 'active' ? t('disable') : t('enable')}</button></td></tr>`).join('') + `</table>`;
+            <td class="acts"><button ${ED} data-copy="${esc(x.code)}">${t('copy')}</button> <a ${ED} href="mailto:?subject=${encodeURIComponent('INOVEX Academy access code')}&body=${msgText(x)}">${t('email').replace(/\s*\(.*\)/, '')}</a> <a class="btn small wa" href="https://wa.me/?text=${msgText(x)}" target="_blank" rel="noopener">WA</a>
+            <button ${ED} data-kst="${i}">${x.status === 'active' ? t('disable') : t('enable')}</button> <button ${ED} data-ed="${i}">${t('edit')}</button> <button ${DL} data-del="${i}">${t('del')}</button></td></tr>`).join('') + `</table>`;
         $('#ccf').onsubmit = async e => {
           e.preventDefault(); const f = e.target, b = f.querySelector('button'); busy(b, true);
           const single = f.mode.value === 'single';
           try {
             const r2 = await api('adminCreateCodes', { company: f.company.value, seats: single ? 1 : f.seats.value, count: single ? f.seats.value : 1, days: f.days.value, courses: f.courses.value, validUntil: f.validUntil.value, requestRef: f.requestRef.value, note: f.note.value });
-            S.flash = { ok: r2.codes.map(c => c.code).join('  ') }; viewAdmin('codes');
+            reload(r2.codes.map(c => c.code).join('  '));
           } catch (err) { alertless(errText(err)); busy(b, false); }
         };
-        $('#tb').querySelectorAll('[data-copy]').forEach(b => b.onclick = () => { try { navigator.clipboard.writeText(b.getAttribute('data-copy')); b.textContent = '✓'; } catch (e) {} });
-        $('#tb').querySelectorAll('[data-kst]').forEach(b => b.onclick = async () => {
-          busy(b, true); try { await api('adminCodeStatus', { code: b.getAttribute('data-kst'), status: b.getAttribute('data-v') }); viewAdmin('codes'); } catch (err) { alertless(errText(err)); busy(b, false); }
+        on('[data-copy]', b => { try { navigator.clipboard.writeText(b.getAttribute('data-copy')); b.textContent = '✓'; } catch (e) {} });
+        on('[data-kst]', b => { const x = rows[b.dataset.kst]; act(b, 'adminCodeStatus', { code: x.code, status: x.status === 'active' ? 'disabled' : 'active' }); });
+        on('[data-ed]', async b => {
+          const x = rows[b.dataset.ed];
+          const v = await dialog(t('edit') + ' — ' + x.code, [
+            { name: 'company', label: coName(), value: x.company, required: true }, { name: 'seats', label: t('seats'), type: 'number', min: Math.max(1, Number(x.used) || 0), max: 500, value: x.seats },
+            { name: 'days', label: t('days'), type: 'number', min: 1, max: 365, value: x.days }, { name: 'courses', label: t('courses'), type: 'select', value: x.courses, options: courseOpts() },
+            { name: 'validUntil', label: t('deadline'), type: 'date', value: dateIn(x.validUntil) }, { name: 'requestRef', label: t('requestRef'), value: x.requestRef, ltr: true },
+            { name: 'note', label: t('notesLabel'), value: x.note }
+          ], { submit: v => api('adminEditCode', Object.assign({ code: x.code }, v)) });
+          if (v) reload(t('saved'));
         });
+        on('[data-del]', async b => { const x = rows[b.dataset.del]; if (await confirmDel(`${t('confirmDel')} ${x.code}`)) act(b, 'adminDeleteCode', { code: x.code }); });
       } else if (tab === 'certs') {
-        const rows = certs.filter(x => !q || (x.name + ' ' + x.email + ' ' + x.company + ' ' + x.certificateId + ' ' + x.course).toLowerCase().indexOf(q) >= 0);
+        const rows = certs.filter(x => has(x.name + ' ' + x.email + ' ' + x.company + ' ' + x.certificateId + ' ' + x.course));
         $('#tb').innerHTML = `<details class="issue" ${certs.length ? '' : 'open'}><summary class="btn small gold">＋ ${t('issueCert')}</summary>
           <form id="icf" class="issue-grid"><label class="field"><span>${t('fullName')}</span><input name="name" required maxlength="100"></label>
-          <label class="field"><span>${t('company').replace(/\s*\(.*\)/, '')}</span><input name="company" maxlength="120"></label>
+          <label class="field"><span>${coName()}</span><input name="company" maxlength="120"></label>
           <label class="field"><span>${t('email').replace(/\s*\(.*\)/, '')}</span><input name="email" type="email" dir="ltr"></label>
           <label class="field"><span>${t('courseName')}</span><input name="course" required maxlength="160" value="Powder Coating Fundamentals"></label>
           <label class="field"><span>${t('certKind')}</span><select name="type" class="sel"><option value="Completion">${t('kCompletion')}</option><option value="Attendance">${t('kAttendance')}</option><option value="Qualification">${t('kQualification')}</option></select></label>
@@ -683,42 +782,92 @@
           rows.map((x, i) => `<tr><td class="mono">${esc(x.certificateId)}</td><td>${esc(x.name)}${x.company ? `<div class="hint">${esc(x.company)}</div>` : ''}</td><td>${esc(x.course)}<div class="hint">${x.source === 'online' ? 'online' : t('issuedManually')}</div></td>
             <td>${esc(x.type)}</td><td>${fmtDate(x.date)}</td><td class="mono">${esc(x.score || '')}</td>
             <td><span class="pill ${x.status === 'revoked' ? 'bad' : 'ok'}">${x.status === 'revoked' ? t('revoked') : t('valid')}</span></td>
-            <td style="white-space:nowrap"><button class="btn small gold" data-cpdf="${i}">PDF</button> <button class="btn small ghost" data-cst="${esc(x.certificateId)}" data-v="${x.status === 'revoked' ? 'valid' : 'revoked'}">${x.status === 'revoked' ? t('reinstate') : t('revoke')}</button></td></tr>`).join('') + `</table>`;
+            <td class="acts"><button class="btn small gold" data-cpdf="${i}">PDF</button> <button ${ED} data-cprint="${i}">${t('print')}</button> <button ${ED} data-cst="${i}">${x.status === 'revoked' ? t('reinstate') : t('revoke')}</button>
+            <button ${ED} data-ed="${i}">${t('edit')}</button> <button ${DL} data-del="${i}">${t('del')}</button></td></tr>`).join('') + `</table>`;
         $('#icf').onsubmit = async e => {
           e.preventDefault(); const f = e.target, b = f.querySelector('button'); busy(b, true);
           try {
             const res = await api('adminIssueCert', { name: f.name.value, company: f.company.value, email: f.email.value, course: f.course.value, type: f.type.value, date: f.date.value, score: f.score.value, note: f.note.value });
             const c = res.certificate;
-            await certificatePdf({ manual: true, name: c.name, courseTitle: c.course, courseTitleEn: c.course, type: c.type, date: c.date, score: c.score, company: c.company, certificateId: c.certificateId });
-            viewAdmin('certs');
+            await certificatePdf(certData(Object.assign({ source: 'manual' }, c)));
+            reload();
           } catch (err) { alertless(errText(err)); busy(b, false); }
         };
-        $('#tb').querySelectorAll('[data-cpdf]').forEach(b => b.onclick = async () => {
-          const x = rows[Number(b.getAttribute('data-cpdf'))]; busy(b, true);
-          try {
-            if (x.source === 'online') { const sc = String(x.score).split('/'); await certificatePdf({ manual: true, name: x.name, courseId: x.course, courseTitle: x.course, type: 'Completion', date: x.date, score: sc[0], total: sc[1], percent: x.percent, certificateId: x.certificateId }); }
-            else await certificatePdf({ manual: true, name: x.name, courseTitle: x.course, courseTitleEn: x.course, type: x.type, date: x.date, score: x.score, company: x.company, certificateId: x.certificateId });
-          } finally { busy(b, false); }
+        const pdfBtn = mode => async b => { const x = rows[Number(b.dataset.cpdf != null ? b.dataset.cpdf : b.dataset.cprint)]; busy(b, true); try { await certificatePdf(certData(x), mode); } finally { busy(b, false); } };
+        on('[data-cpdf]', pdfBtn()); on('[data-cprint]', pdfBtn('print'));
+        on('[data-cst]', b => { const x = rows[b.dataset.cst]; act(b, 'adminCertStatus', { id: x.certificateId, status: x.status === 'revoked' ? 'valid' : 'revoked' }); });
+        on('[data-ed]', async b => {
+          const x = rows[b.dataset.ed];
+          const v = await dialog(t('edit') + ' — ' + x.certificateId, [
+            { name: 'name', label: t('fullName'), value: x.name, required: true }, { name: 'company', label: coName(), value: x.company },
+            { name: 'course', label: t('courseName'), value: x.course, required: true },
+            { name: 'type', label: t('certKind'), type: 'select', value: x.type, options: [['Completion', t('kCompletion')], ['Attendance', t('kAttendance')], ['Qualification', t('kQualification')]] },
+            { name: 'date', label: t('certDate'), type: 'date', value: dateIn(x.date) }
+          ].concat(x.source === 'online' ? [] : [{ name: 'score', label: t('yourScore'), value: x.score }]), { submit: v => api('adminEditCert', Object.assign({ id: x.certificateId }, v)) });
+          if (v) reload(t('saved'));
         });
-        $('#tb').querySelectorAll('[data-cst]').forEach(b => b.onclick = async () => {
-          busy(b, true);
-          try { await api('adminCertStatus', { id: b.getAttribute('data-cst'), status: b.getAttribute('data-v') }); viewAdmin('certs'); } catch (err) { alertless(errText(err)); busy(b, false); }
-        });
+        on('[data-del]', async b => { const x = rows[b.dataset.del]; if (await confirmDel(`${t('confirmDel')} ${x.certificateId} · ${x.name}`)) act(b, 'adminDeleteCert', { id: x.certificateId }); });
       } else if (tab === 'requests') {
-        const rows = apps.filter(x => !q || (x.company + ' ' + x.contact + ' ' + x.email).toLowerCase().indexOf(q) >= 0);
-        $('#tb').innerHTML = `<table class="table"><tr><th>${t('certDate')}</th><th>Ref</th><th>${t('company').replace(/\s*\(.*\)/, '')}</th><th>${t('fullName')}</th><th>${t('email')}</th><th>${t('phone').replace(/\s*\(.*\)/, '')}</th><th>${t('trainees')}</th><th>PDF</th></tr>` +
-          rows.map(x => `<tr><td>${fmtDate(x.time)}</td><td class="mono">${esc(x.ref)}</td><td>${esc(x.company)}</td><td>${esc(x.contact)}</td><td class="mono">${esc(x.email)}</td><td class="mono">${esc(x.phone)}</td><td class="mono">${esc(x.trainees)}</td><td>${x.pdf ? `<a href="${esc(x.pdf)}" target="_blank" rel="noopener">PDF</a>` : ''}</td></tr>`).join('') + `</table>`;
+        const rows = apps.filter(x => has(x.company + ' ' + x.contact + ' ' + x.email + ' ' + x.ref));
+        const stPill = s => `<span class="pill ${s === 'approved' ? 'ok' : s === 'rejected' ? 'bad' : s === 'new' ? 'gold' : ''}">${t({ new: 'rNew', approved: 'approved', rejected: 'rejected', closed: 'closed' }[s] || 'rNew')}</span>`;
+        $('#tb').innerHTML = `<table class="table"><tr><th>${t('certDate')}</th><th>Ref</th><th>${coName()}</th><th>${t('fullName')}</th><th>${t('email')}</th><th>${t('phone').replace(/\s*\(.*\)/, '')}</th><th>${t('trainees')}</th><th>${t('status')}</th><th></th></tr>` +
+          rows.map((x, i) => `<tr><td>${fmtDate(x.time)}</td><td class="mono">${esc(x.ref)}${x.pdf ? `<div><a href="${esc(x.pdf)}" target="_blank" rel="noopener">PDF</a></div>` : ''}</td><td>${esc(x.company)}${x.note ? `<div class="hint">${esc(x.note)}</div>` : ''}</td><td>${esc(x.contact)}</td><td class="mono">${esc(x.email)}</td><td class="mono">${esc(x.phone)}</td><td class="mono">${esc(x.trainees)}</td>
+            <td>${stPill(x.status)}</td><td class="acts">${x.status !== 'approved' ? `<button class="btn small gold" data-ap="${i}">${t('approve')}</button> ` : ''}<button ${ED} data-ed="${i}">${t('edit')}</button> <button ${DL} data-del="${i}">${t('del')}</button></td></tr>`).join('') + `</table>`;
+        on('[data-ap]', async b => {
+          const x = rows[b.dataset.ap];
+          const v = await dialog(t('approveT') + ' — ' + x.ref, [
+            { name: 'company', label: coName(), value: x.company, required: true },
+            { name: 'managerName', label: t('managerName'), value: x.contact }, { name: 'managerEmail', label: t('managerEmail'), type: 'email', value: x.email, required: true, ltr: true },
+            { name: 'mode', label: t('codeKind'), type: 'select', value: 'shared', options: [['shared', t('codeShared')], ['single', t('codeSingle')]] },
+            { name: 'seats', label: t('seats'), type: 'number', min: 0, max: 500, value: parseInt(x.trainees, 10) || 5 },
+            { name: 'days', label: t('days'), type: 'number', min: 1, max: 365, value: 30 }, { name: 'courses', label: t('courses'), type: 'select', value: '*', options: courseOpts() },
+            { name: 'notify', label: t('notify'), type: 'checkbox', value: true }
+          ], { text: t('approveD'), ok: t('approve'), submit: v => api('adminApprove', { ref: x.ref, company: v.company, managerName: v.managerName, managerEmail: v.managerEmail, single: v.mode === 'single', seats: v.seats, days: v.days, courses: v.courses, notify: v.notify }) });
+          if (v && v.ref) reload(t('approvedOk', { codes: (v.codes || []).map(c => c.code).join('  ') || '—' }));
+        });
+        on('[data-ed]', async b => {
+          const x = rows[b.dataset.ed];
+          const v = await dialog(t('edit') + ' — ' + x.ref, [
+            { name: 'company', label: coName(), value: x.company, required: true }, { name: 'contact', label: t('fullName'), value: x.contact },
+            { name: 'email', label: t('email').replace(/\s*\(.*\)/, ''), type: 'email', value: x.email, ltr: true }, { name: 'phone', label: t('phone').replace(/\s*\(.*\)/, ''), value: x.phone, ltr: true },
+            { name: 'trainees', label: t('trainees'), value: x.trainees },
+            { name: 'status', label: t('status'), type: 'select', value: x.status || 'new', options: [['new', t('rNew')], ['approved', t('approved')], ['rejected', t('rejected')], ['closed', t('closed')]] },
+            { name: 'note', label: t('notesLabel'), type: 'textarea', value: x.note }
+          ], { submit: v => api('adminEditApplication', Object.assign({ ref: x.ref }, v)) });
+          if (v) reload(t('saved'));
+        });
+        on('[data-del]', async b => { const x = rows[b.dataset.del]; if (await confirmDel(`${t('confirmDel')} ${x.ref} · ${x.company}`)) act(b, 'adminDeleteApplication', { ref: x.ref }); });
+      } else if (tab === 'companies') {
+        const rows = comps.filter(x => has(x.company + ' ' + x.managerEmail + ' ' + x.managerName + ' ' + x.requestRef));
+        const form = x => [
+          { name: 'company', label: coName(), value: x.company, required: true }, { name: 'managerName', label: t('managerName'), value: x.managerName },
+          { name: 'managerEmail', label: t('managerEmail'), value: x.managerEmail, required: true, ltr: true, hint: t('managerEmailsHint') },
+          { name: 'phone', label: t('phone').replace(/\s*\(.*\)/, ''), value: x.phone, ltr: true }, { name: 'requestRef', label: t('requestRef'), value: x.requestRef, ltr: true, hint: t('refsHint') },
+          { name: 'status', label: t('status'), type: 'select', value: x.status || 'active', options: [['active', t('active')], ['disabled', t('disabled')]] },
+          { name: 'note', label: t('notesLabel'), value: x.note }];
+        $('#tb').innerHTML = `<p><button class="btn small gold" id="addco">＋ ${t('addCompany')}</button></p><table class="table"><tr><th>${coName()}</th><th>${t('manager')}</th><th>${t('requestRef')}</th><th>${t('codesTab')}</th><th>${t('trainees')}</th><th>${t('status')}</th><th></th></tr>` +
+          rows.map((x, i) => `<tr><td><b>${esc(x.company)}</b>${x.note ? `<div class="hint">${esc(x.note)}</div>` : ''}</td><td>${esc(x.managerName || '')}<div class="mono hint">${esc(x.managerEmail)}</div></td><td class="mono">${esc(x.requestRef || '')}</td>
+            <td class="mono">${x.codes} · ${x.seats} ${t('seats').toLowerCase()}</td><td class="mono">${x.trainees}</td><td><span class="pill ${x.status === 'disabled' ? 'bad' : 'ok'}">${x.status === 'disabled' ? t('disabled') : t('active')}</span></td>
+            <td class="acts"><a class="btn small gold" href="#/manager/${encodeURIComponent(x.company)}">${t('dashboard')}</a> <button ${ED} data-ed="${i}">${t('edit')}</button> <button ${DL} data-del="${i}">${t('del')}</button></td></tr>`).join('') + `</table>`;
+        $('#addco').onclick = async () => { const v = await dialog(t('addCompany'), form({}), { submit: v => api('adminSaveCompany', v) }); if (v) reload(t('saved')); };
+        on('[data-ed]', async b => { const x = rows[b.dataset.ed]; const v = await dialog(t('edit') + ' — ' + x.company, form(x), { submit: v => api('adminSaveCompany', Object.assign({ original: x.company }, v)) }); if (v) reload(t('saved')); });
+        on('[data-del]', async b => { const x = rows[b.dataset.del]; if (await confirmDel(`${t('confirmDel')} ${x.company}`)) act(b, 'adminDeleteCompany', { company: x.company }); });
+      } else if (tab === 'admins') {
+        $('#tb').innerHTML = `<form id="aaf" class="toolbar" style="margin:0 0 12px"><input name="email" type="email" required dir="ltr" placeholder="name@inovex-group.com" pattern=".+@inovex-group\\.com$" title="${esc(t('adminDomain'))}"><button class="btn small gold">＋ ${t('addAdmin')}</button></form>
+          <p class="hint">${t('adminDomain')}</p><table class="table"><tr><th>${t('email')}</th><th></th><th></th></tr>` +
+          admins.filter(x => has(x.email)).map((x, i) => `<tr><td class="mono">${esc(x.email)}</td><td>${x.owner ? `<span class="pill gold">${t('owner')}</span>` : ''} ${x.you ? `<span class="pill">${t('you')}</span>` : ''} ${!x.valid ? `<span class="pill bad">${t('adminDomain')}</span>` : ''}</td>
+            <td class="acts">${x.owner || x.you ? '' : `<button ${DL} data-rm="${esc(x.email)}">${t('remove')}</button>`}</td></tr>`).join('') + `</table>`;
+        $('#aaf').onsubmit = async e => { e.preventDefault(); const f = e.target; act(f.querySelector('button'), 'adminAddAdmin', { email: f.email.value.trim().toLowerCase() }, t('saved')); };
+        on('[data-rm]', async b => { if (await confirmDel(`${t('remove')} ${b.dataset.rm}?`)) act(b, 'adminRemoveAdmin', { email: b.dataset.rm }); });
       } else {
-        const rows = results.filter(x => !q || (x.name + ' ' + x.email).toLowerCase().indexOf(q) >= 0);
-        $('#tb').innerHTML = `<table class="table"><tr><th>${t('certDate')}</th><th>${t('fullName')}</th><th>${t('email')}</th><th>${t('assessment')}</th><th>${t('language')}</th><th>${t('yourScore')}</th><th>${t('status')}</th><th>${t('certId')}</th></tr>` +
-          rows.map(x => `<tr><td>${fmtDate(x.time)}</td><td>${esc(x.name)}</td><td class="mono">${esc(x.email)}</td><td class="mono">${esc(x.course)}</td><td>${esc((I18N[x.lang] || {})._name || x.lang)}</td>
-          <td class="mono">${x.score}/${x.total} (${x.percent}%)</td><td><span class="pill ${x.passed ? 'ok' : 'bad'}">${x.passed ? t('passed') : t('notPassed')}</span></td><td class="mono">${esc(x.certificateId || '')}</td></tr>`).join('') + `</table>`;
+        const rows = results.filter(x => has(x.name + ' ' + x.email));
+        $('#tb').innerHTML = `<table class="table"><tr><th>${t('certDate')}</th><th>${t('fullName')}</th><th>${t('email')}</th><th>${t('assessment')}</th><th>${t('language')}</th><th>${t('yourScore')}</th><th>${t('status')}</th><th>${t('certId')}</th><th></th></tr>` +
+          rows.map((x, i) => `<tr><td>${fmtDate(x.time)}</td><td>${esc(x.name)}</td><td class="mono">${esc(x.email)}</td><td class="mono">${esc(x.course)}</td><td>${esc((I18N[x.lang] || {})._name || x.lang)}</td>
+          <td class="mono">${x.score}/${x.total} (${x.percent}%)</td><td><span class="pill ${x.passed ? 'ok' : 'bad'}">${x.passed ? t('passed') : t('notPassed')}</span></td><td class="mono">${esc(x.certificateId || '')}</td>
+          <td class="acts"><button ${DL} data-del="${i}">${t('del')}</button></td></tr>`).join('') + `</table>`;
+        on('[data-del]', async b => { const x = rows[b.dataset.del]; if (await confirmDel(`${t('confirmDel')} ${x.name} · ${x.score}/${x.total}${x.certificateId ? ' · ' + x.certificateId : ''}`)) act(b, 'adminDeleteResult', { email: x.email, time: x.time }); });
       }
     };
-    async function upd(b, data) {
-      busy(b, true);
-      try { await api('adminUpdate', data); viewAdmin(tab); } catch (e) { alertless(errText(e)); busy(b, false); }
-    }
     $('#q').oninput = draw;
     $('#csv').onclick = () => {
       const rows = tab === 'codes'
@@ -726,15 +875,65 @@
         : tab === 'certs'
         ? [['certificateId', 'name', 'company', 'email', 'course', 'type', 'date', 'score', 'status', 'source']].concat(certs.map(x => [x.certificateId, x.name, x.company, x.email, x.course, x.type, x.date, x.score, x.status, x.source]))
         : tab === 'requests'
-        ? [['time', 'ref', 'company', 'contact', 'email', 'phone', 'trainees', 'pdf']].concat(apps.map(x => [x.time, x.ref, x.company, x.contact, x.email, x.phone, x.trainees, x.pdf]))
+        ? [['time', 'ref', 'company', 'contact', 'email', 'phone', 'trainees', 'status', 'note', 'pdf']].concat(apps.map(x => [x.time, x.ref, x.company, x.contact, x.email, x.phone, x.trainees, x.status, x.note, x.pdf]))
+        : tab === 'companies'
+        ? [['company', 'managerName', 'managerEmail', 'phone', 'requestRef', 'codes', 'seats', 'trainees', 'status', 'note']].concat(comps.map(x => [x.company, x.managerName, x.managerEmail, x.phone, x.requestRef, x.codes, x.seats, x.trainees, x.status, x.note]))
+        : tab === 'admins'
+        ? [['email', 'owner']].concat(admins.map(x => [x.email, x.owner]))
         : tab === 'trainees'
         ? [['name', 'email', 'company', 'phone', 'created', 'expires', 'status', 'modulesOpened', 'presentation', 'attempts', 'bestScore', 'bestPercent', 'passed']].concat(users.map(x => [x.name, x.email, x.company, x.phone, x.created, x.expires, state(x), x.modulesOpened, x.presentation, x.attempts, x.best ? x.best.score : '', x.best ? x.best.percent : '', x.best ? x.best.passed : '']))
         : [['time', 'name', 'email', 'course', 'lang', 'score', 'total', 'percent', 'passed', 'certificateId']].concat(results.map(x => [x.time, x.name, x.email, x.course, x.lang, x.score, x.total, x.percent, x.passed, x.certificateId]));
-      const csv = '﻿' + rows.map(r => r.map(v => '"' + String(v == null ? '' : v).replace(/"/g, '""') + '"').join(',')).join('\r\n');
-      const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv' }));
-      a.download = `INOVEX_Academy_${tab}_${new Date().toISOString().slice(0, 10)}.csv`; a.click();
+      downloadCsv(rows, `INOVEX_Academy_${tab}_${new Date().toISOString().slice(0, 10)}.csv`);
     };
     draw();
+  }
+  function downloadCsv(rows, name) {
+    const csv = '﻿' + rows.map(r => r.map(v => '"' + String(v == null ? '' : v).replace(/"/g, '""') + '"').join(',')).join('\r\n');
+    const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv' }));
+    a.download = name; a.click();
+  }
+
+  /* ---------------------------------------------------------------- company manager dashboard */
+  async function viewManager(company) {
+    view(`<p>${t('loading')}</p>`);
+    const d = await api('managerDashboard', company ? { company: company } : {});
+    const tr = d.trainees, certs = d.certificates, codes = d.codes, M = d.modulesTotal || 8, now = Date.now();
+    const seats = codes.reduce((a, k) => a + k.seats, 0), used = codes.reduce((a, k) => a + k.used, 0);
+    const pct = x => Math.round(((x.modulesOpened + (x.presentation ? 1 : 0) + (x.best && x.best.passed ? 1 : 0)) / (M + 2)) * 100);
+    const avg = tr.length ? Math.round(tr.reduce((a, x) => a + pct(x), 0) / tr.length) : 0;
+    const st = x => x.status === 'disabled' ? 'disabled' : x.status === 'deleted' ? 'disabled' : !x.expires ? 'awaiting' : new Date(x.expires) < now ? 'expired' : 'active';
+    const certOf = id => certs.filter(c => c.certificateId === id)[0];
+    const switcher = S.user.admin || d.companies.length > 1
+      ? `<label class="field" style="max-width:340px"><span>${t('viewAs')}</span>${S.user.admin ? `<input id="cosel" list="cos" value="${esc(d.company.company)}"><datalist id="cos">${d.companies.map(c => `<option value="${esc(c)}">`).join('')}</datalist>` : `<select id="cosel" class="sel">${d.companies.map(c => `<option ${c === d.company.company ? 'selected' : ''}>${esc(c)}</option>`).join('')}</select>`}</label>` : '';
+    view(`${msgBox()}<div class="pill gold">${t('dashboard')}</div><h1 style="margin-top:8px" dir="auto">${esc(d.company.company)}</h1>
+      ${d.company.requestRef ? `<p class="hint mono">${esc(d.company.requestRef)}</p>` : ''}${switcher}
+      <div class="kpis"><div class="kpi"><b>${tr.length}</b><span>${t('trainees')}</span></div><div class="kpi"><b>${used}/${seats}</b><span>${t('seatsUsed')}</span></div>
+      <div class="kpi"><b>${avg}%</b><span>${t('avgProgress')}</span></div><div class="kpi"><b>${tr.filter(x => x.best && x.best.passed).length}</b><span>${t('passed')}</span></div>
+      <div class="kpi"><b>${certs.length}</b><span>${t('certificates')}</span></div></div>
+      <div class="toolbar"><h2 style="margin:0;flex:1">${t('teamProgress')}</h2><button class="btn small dark" id="mcsv">${t('exportCsv')}</button></div>
+      <div class="tablewrap">${tr.length ? `<table class="table"><tr><th>${t('fullName')}</th><th>${t('status')}</th><th>${t('progress')}</th><th>${t('best')}</th><th>${t('lastActivity')}</th><th>${t('certificates')}</th></tr>` +
+        tr.map(x => { const s = st(x); return `<tr><td>${esc(x.name || '—')}<div class="mono hint">${esc(x.email)}</div></td>
+          <td><span class="pill ${s === 'active' ? 'ok' : 'bad'}">${t(s)}</span>${x.expires ? `<div class="hint">${t('expires')}: ${fmtDate(x.expires)}</div>` : ''}</td>
+          <td style="min-width:170px"><div class="bar"><i style="width:${pct(x)}%"></i></div><div class="hint">${t('modules')} <span class="mono" dir="ltr">${x.modulesOpened}/${M}</span>${x.presentation ? ' · ▶' : ''} · <span class="mono" dir="ltr">${pct(x)}%</span></div></td>
+          <td class="mono">${x.best ? `${x.best.score}/${x.best.total} (${x.best.percent}%) ${x.best.passed ? '✓' : ''}` : '—'} <span class="hint">×${x.attempts}</span></td>
+          <td>${x.lastActivity ? fmtDate(x.lastActivity) : '—'}</td>
+          <td class="acts">${x.certificates.map(id => `<button class="btn small gold" data-mpdf="${esc(id)}">PDF</button> <button class="btn small ghost" data-mprint="${esc(id)}">${t('print')}</button>`).join('<br>') || '—'}</td></tr>`; }).join('') + `</table>` : `<p class="hint">${t('noTrainees')}</p>`}</div>
+      <div class="toolbar" style="margin-top:22px"><h2 style="margin:0;flex:1">${t('certificates')}</h2>${certs.length ? `<button class="btn small gold" id="mall">${t('downloadAll')}</button> <button class="btn small ghost" id="mallp">${t('print')}</button>` : ''}</div>
+      <div class="tablewrap">${certs.length ? `<table class="table"><tr><th>${t('certId')}</th><th>${t('fullName')}</th><th>${t('courseName')}</th><th>${t('certKind')}</th><th>${t('certDate')}</th><th></th></tr>` +
+        certs.map(c => `<tr><td class="mono">${esc(c.certificateId)}</td><td>${esc(c.name)}</td><td>${esc(c.course)}</td><td>${esc(c.type)}</td><td>${fmtDate(c.date)}</td>
+          <td class="acts"><button class="btn small gold" data-mpdf="${esc(c.certificateId)}">PDF</button> <button class="btn small ghost" data-mprint="${esc(c.certificateId)}">${t('print')}</button> <a class="btn small ghost" href="#/cert/${esc(c.certificateId)}">${t('check')}</a></td></tr>`).join('') + `</table>` : `<p class="hint">${t('noCerts')}</p>`}</div>
+      <h2 style="margin-top:22px">${t('codesTab')}</h2><div class="tablewrap"><table class="table"><tr><th>${t('accessCode')}</th><th>${t('seatsUsed')}</th><th>${t('days')}</th><th>${t('deadline')}</th><th>${t('status')}</th></tr>` +
+        codes.map(k => `<tr><td class="mono"><b>${esc(k.code)}</b></td><td class="mono">${k.used}/${k.seats}</td><td class="mono">${esc(k.days)}</td><td>${k.validUntil ? fmtDate(k.validUntil) : '—'}</td>
+          <td><span class="pill ${k.status === 'active' && k.used < k.seats ? 'ok' : 'bad'}">${k.status !== 'active' ? t('disabled') : k.used >= k.seats ? t('usedUp') : t('active')}</span></td></tr>`).join('') + `</table></div>`);
+    const run = mode => async b => { const c = certOf(b.getAttribute(mode === 'print' ? 'data-mprint' : 'data-mpdf')); if (!c) return; busy(b, true); try { await certificatePdf(certData(c), mode); } finally { busy(b, false); } };
+    app.querySelectorAll('[data-mpdf]').forEach(b => b.onclick = () => run()(b));
+    app.querySelectorAll('[data-mprint]').forEach(b => b.onclick = () => run('print')(b));
+    const all = mode => async e => { const b = e.target; busy(b, true); try { await certificatePdf(certs.map(certData), mode); } finally { busy(b, false); } };
+    if ($('#mall')) { $('#mall').onclick = all(); $('#mallp').onclick = all('print'); }
+    const sel = $('#cosel'); if (sel) sel.onchange = () => go('/manager/' + encodeURIComponent(sel.value));
+    $('#mcsv').onclick = () => downloadCsv([['name', 'email', 'status', 'expires', 'modulesOpened', 'presentation', 'progressPercent', 'attempts', 'bestScore', 'bestPercent', 'passed', 'lastActivity', 'certificates']]
+      .concat(tr.map(x => [x.name, x.email, st(x), x.expires, x.modulesOpened, x.presentation, pct(x), x.attempts, x.best ? x.best.score + '/' + x.best.total : '', x.best ? x.best.percent : '', x.best ? x.best.passed : '', x.lastActivity, x.certificates.join(' ')])),
+      `INOVEX_Academy_${d.company.company.replace(/[^\w]+/g, '_')}_${new Date().toISOString().slice(0, 10)}.csv`);
   }
 
   /* ---------------------------------------------------------------- start */

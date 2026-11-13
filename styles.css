@@ -418,3 +418,23 @@ html, body { overflow-x: hidden }
 .lp-faq summary::after { content: "+"; color: var(--gold-d); font-size: 22px; line-height: 1 } .lp-faq details[open] summary::after { content: "−" }
 .lp-faq summary::-webkit-details-marker { display: none }
 .lp-faq details p { margin: 0 0 16px; color: var(--ink3) }
+
+/* admin edit dialogs, delete buttons, manager dashboard */
+.btn.danger { background: var(--bad); color: #fff; border: 1px solid var(--bad) }
+.btn.small.danger { background: transparent; color: var(--bad); border-color: #E9C2C2 }
+.btn.small.danger:hover { background: #F8E3E3 }
+.modal .btn.danger { background: var(--bad); color: #fff }
+.table td.acts { white-space: nowrap }
+.modal-back { position: fixed; inset: 0; background: rgba(20,20,20,.55); z-index: 1000; display: flex; align-items: flex-start; justify-content: center; padding: 6vh 16px; overflow-y: auto }
+.modal { background: var(--card); border-radius: 14px; box-shadow: 0 30px 80px rgba(0,0,0,.35); width: 100%; max-width: 640px; padding: 22px 24px; border-top: 4px solid var(--gold) }
+.modal h3 { margin: 0 0 6px; font-family: var(--head); font-size: 22px }
+.modal-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 4px 16px; margin-top: 10px }
+.modal-grid .wide, .modal-grid .check { grid-column: 1 / -1 }
+.modal .check { display: flex; gap: 10px; align-items: flex-start; margin: 8px 0; font-size: 14px; cursor: pointer }
+.modal .check input { margin-top: 3px; width: 18px; height: 18px; accent-color: var(--gold-d) }
+.modal textarea { width: 100%; font: inherit; padding: 10px 12px; border: 1px solid var(--line); border-radius: 8px }
+.modal .field small { display: block; margin-top: 3px }
+.modal-actions { display: flex; gap: 10px; justify-content: flex-end; margin-top: 16px }
+.tablewrap .bar { height: 8px; background: var(--silver2); border-radius: 6px; overflow: hidden; margin-bottom: 4px }
+.tablewrap .bar i { display: block; height: 100%; background: linear-gradient(90deg, var(--gold-d), var(--gold2)); border-radius: 6px }
+@media (max-width: 640px) { .modal-grid { grid-template-columns: 1fr } .modal { padding: 18px } }
