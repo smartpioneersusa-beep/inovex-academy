@@ -63,6 +63,8 @@
     haveCode: L('Have an access code? Create your account', 'لديك رمز وصول؟ أنشئ حسابك', 'رسائی کوڈ ہے؟ اکاؤنٹ بنائیں', 'एक्सेस कोड है? खाता बनाएँ'),
     pc101: L('Powder Coating Fundamentals', 'أساسيات الطلاء بالبودرة', 'پاؤڈر کوٹنگ کی بنیادی باتیں', 'पाउडर कोटिंग की बुनियादी बातें'),
     pc101d: L('8 modules · 25-slide presentation · 30-question assessment · certificate', '8 وحدات · عرض من 25 شريحة · تقييم من 30 سؤالاً · شهادة', '8 ماڈیول · 25 سلائیڈز · 30 سوالات · سرٹیفکیٹ', '8 मॉड्यूल · 25 स्लाइड · 30 प्रश्न · प्रमाणपत्र'),
+    ss101: L('Professional Sales Skills', 'مهارات البيع الاحترافية', 'پیشہ ورانہ سیلز مہارتیں', 'पेशेवर बिक्री कौशल'),
+    ss101d: L('12 modules · 69-slide presentation · 36-question assessment · certificate', '12 وحدة · عرض من 69 شريحة · تقييم من 36 سؤالاً · شهادة', '12 ماڈیول · 69 سلائیڈز · 36 سوالات · سرٹیفکیٹ', '12 मॉड्यूल · 69 स्लाइड · 36 प्रश्न · प्रमाणपत्र'),
     more: L('More courses are on the way', 'دورات أخرى قيد الإعداد', 'مزید کورس تیار ہو رہے ہیں', 'और कोर्स आ रहे हैं'),
     moreD: L('Liquid painting, surface preparation, spray guns and pumps, automation, maintenance.', 'الطلاء السائل، تجهيز الأسطح، مسدسات الرش والمضخات، الأتمتة، الصيانة.', 'مائع پینٹنگ، سطح کی تیاری، اسپرے گن اور پمپ، آٹومیشن، مرمت۔', 'लिक्विड पेंटिंग, सतह तैयारी, स्प्रे गन और पंप, ऑटोमेशन, रखरखाव।'),
     ticker: [L('INOVEX — KSA', 'INOVEX — المملكة العربية السعودية', 'INOVEX — سعودی عرب', 'INOVEX — सऊदी अरब'),
@@ -278,6 +280,7 @@
       <section class="lp-sec"><h2>${g(P.onlineT)}</h2><p class="lp-lead">${g(P.onlineS)}</p>
         <div class="lp-courses">
           <a class="lp-course" href="${signedIn ? '#/c/PC-101' : '#/signup'}"><span class="code">PC-101</span><b>${g(P.pc101)}</b><small>${g(P.pc101d)}</small><span class="go">${signedIn ? g(P.ctaMine) : g(P.haveCode)} →</span></a>
+          <a class="lp-course" href="${signedIn ? '#/c/SS-101' : '#/signup'}"><span class="code">SS-101</span><b>${g(P.ss101)}</b><small>${g(P.ss101d)}</small><span class="go">${signedIn ? g(P.ctaMine) : g(P.haveCode)} →</span></a>
           <div class="lp-course muted"><span class="code">2027</span><b>${g(P.more)}</b><small>${g(P.moreD)}</small></div>
         </div></section>
       <section class="lp-sec"><h2>${g(P.partnersT)}</h2>

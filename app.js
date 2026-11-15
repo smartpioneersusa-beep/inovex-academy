@@ -294,7 +294,7 @@
       `<span class="pill ${dl <= 3 ? 'bad' : 'gold'}">${dl <= 1 ? t('lastDay') : t('daysLeft', { n: dl })}</span> <span class="pill">${t('expiresOn', { date: fmtDate(S.user.expires) })}</span>`;
     const cards = courses.map(c => {
       const pr = courseProgress(c.id, c);
-      return `<article class="course"><div class="cov"><div class="code">${esc(c.id)}</div><h3>${esc(c.title)}</h3><p>${t('authorised')}</p></div>
+      return `<article class="course"><div class="cov"><div class="code">${esc(c.id)}</div><h3>${esc(c.title)}</h3><p>${wag(c.id) ? t('authorised') : t('association')}</p></div>
         <div class="body"><div class="stats3"><span><b>${c.modules.length}</b>${t('modules')}</span><span><b>${c.slides}</b>${t('slides')}</span><span><b>${c.questions}</b>${t('questions')}</span></div>
         <div class="meter"><i style="width:${pr.pct}%"></i></div>
         <a class="btn dark" href="#/c/${encodeURIComponent(c.id)}">${t('open')}</a></div></article>`;
@@ -329,7 +329,7 @@
     const pr = courseProgress(id, c);
     const best = S.results.filter(r => r.course === id).sort((a, b) => b.score - a.score)[0];
     view(`<div class="crumbs"><a href="#/home">${t('myCourses')}</a> / ${esc(id)}</div>
-      <h1 style="font-size:32px">${esc(c.title)}</h1><p class="hint">${esc(c.sub || '')} · ${t('authorised')} · ${t('association')}</p>
+      <h1 style="font-size:32px">${esc(c.title)}</h1><p class="hint">${esc(c.sub || '')} · ${wag(id) ? t('authorised') + ' · ' : ''}${t('association')}</p>
       <div class="course-top">
         <div class="tile"><div class="ic">▤</div><h3>${t('courseBook')}</h3><p>${c.modules.length} ${t('modules')}</p><a class="btn ghost" href="#/c/${id}/m/1">${t('read')}</a></div>
         <div class="tile"><div class="ic">▶</div><h3>${t('presentation')}</h3><p>${c.slides} ${t('slides')}${pr.pres ? ' · ✓' : ''}</p><a class="btn ghost" href="#/c/${id}/slides">${t('startPresentation')}</a></div>
@@ -406,11 +406,15 @@
     new ResizeObserver(fit).observe(sw); fit(); show();
     setProtected(true);
   }
+  /* Online courses not authorised by WAGNER: show the Al Qemma association only. */
+  const ASSOC_ONLY = ['SS-101'];
+  const wag = id => ASSOC_ONLY.indexOf(id) < 0;
+  const partnerOf = id => wag(id) ? t('partnerLine') : t('association');
   function slideHtml(s, i, n, id) {
     const foot = `<div class="foot"><span>INOVEX Academy · ${esc(id)}</span><span class="mono">${i + 1} / ${n}</span></div>`;
     const ey = s.eyebrow ? `<div class="ey">${esc(s.eyebrow)}</div>` : '';
     const ul = s.bullets && s.bullets.length ? `<ul>${s.bullets.map(b => `<li>${esc(b)}</li>`).join('')}</ul>` : '';
-    if (s.kind === 'cover') return `<div class="slide cover">${ey}<h2>${esc(s.title)}</h2>${s.sub ? `<div class="sub">${esc(s.sub)}</div>` : ''}<div class="partners">${t('partnerLine')}</div><div class="bar"></div></div>`;
+    if (s.kind === 'cover') return `<div class="slide cover">${ey}<h2>${esc(s.title)}</h2>${s.sub ? `<div class="sub">${esc(s.sub)}</div>` : ''}<div class="partners">${partnerOf(id)}</div><div class="bar"></div></div>`;
     if (s.kind === 'statement') return `<div class="slide statement">${ey}<h2>${esc(s.title)}</h2>${foot}</div>`;
     let mid = '';
     if (s.stats) mid = `<div class="statsrow">${s.stats.map(x => `<div class="stat"><b>${esc(x[0])}</b><span>${esc(x[1])}</span></div>`).join('')}</div>`;
@@ -529,7 +533,7 @@
     const type = d.type || 'Completion';
     const head = { Completion: 'CERTIFICATE OF COMPLETION', Attendance: 'CERTIFICATE OF ATTENDANCE', Qualification: 'CERTIFICATE OF QUALIFICATION' }[type] || 'CERTIFICATE OF COMPLETION';
     const verb = { Completion: 'has successfully completed the course', Attendance: 'has attended the training program', Qualification: 'has been qualified in' }[type] || 'has successfully completed the course';
-    const enTitle = d.courseTitleEn || (d.courseId === 'PC-101' ? 'Powder Coating Fundamentals' : d.courseTitle);
+    const enTitle = d.courseTitleEn || ({ 'PC-101': 'Powder Coating Fundamentals', 'SS-101': 'Professional Sales Skills' }[d.courseId] || d.courseTitle);
     const courseLine = d.courseId && d.courseId !== enTitle ? `${esc(d.courseId)} — ${esc(enTitle)}` : esc(enTitle);
     const scoreCell = d.score !== undefined && d.score !== '' && d.score !== null
       ? `<div>Assessment score<b>${d.total ? `${d.score} / ${d.total} (${d.percent}%)` : esc(d.score)}</b></div>` : (d.company ? `<div>Company<b style="font-family:Inter,sans-serif">${esc(d.company)}</b></div>` : '<div></div>');
@@ -540,7 +544,7 @@
       <div class="nm">${esc(d.name)}</div>
       <div style="font-size:18px;color:#444">${verb}</div>${local ? `<div dir="${I18N[S.lang]._dir}" style="font-size:16px;color:#777">${esc(t('certCompleted'))}</div>` : ''}
       <div class="cr">${courseLine}</div>${local ? `<div class="crl" dir="${I18N[S.lang]._dir}">${esc(d.courseTitle)}</div>` : ''}
-      <div class="partners"><span>Authorised by</span><img src="/img/wagner.jpg" alt="WAGNER" class="w"><span>In association with</span><img src="/img/alqemma.png" alt="Al Qemma" class="q"><b>Al Qemma Training Institute</b></div>
+      <div class="partners">${wag(d.courseId) ? '<span>Authorised by</span><img src="/img/wagner.jpg" alt="WAGNER" class="w">' : ''}<span>In association with</span><img src="/img/alqemma.png" alt="Al Qemma" class="q"><b>Al Qemma Training Institute</b></div>
       <div class="row">${scoreCell}<div>Date<b>${fmtDate(d.date, 'en')}</b></div>
         <div>Certificate ID<b>${esc(d.certificateId)}</b></div><div class="sig">Academy Director<br><span style="font-size:12px;color:#666">INOVEX Group LLC · Riyadh</span></div></div>
       <div style="position:absolute;left:0;right:0;bottom:16px;font-size:11px;color:#888">Verify: academy.inovex-group.com/#/cert/${esc(d.certificateId)}</div>
@@ -556,7 +560,7 @@
     const off = $('#offscreen');
     off.innerHTML = `<div class="resultpage reader" id="rp" dir="${I18N[S.lang]._dir}" style="border:0;box-shadow:none">
       <div style="display:flex;justify-content:space-between;border-bottom:3px solid #1C1C1C;padding-bottom:10px;margin-bottom:14px">
-        <div><div style="font-family:Oswald;letter-spacing:.2em;font-weight:600">INOVEX ACADEMY</div><div class="small">${t('partnerLine')}</div></div>
+        <div><div style="font-family:Oswald;letter-spacing:.2em;font-weight:600">INOVEX ACADEMY</div><div class="small">${partnerOf(d.courseId)}</div></div>
         <div class="mono" style="text-align:end">${esc(d.courseId)}<br><span class="small">${fmtDate(d.date)}</span></div></div>
       <h1 style="font-size:24px">${esc(d.courseTitle)}</h1>
       <table><tr><th>${t('fullName')}</th><td>${esc(d.name)}</td><th>${t('email')}</th><td class="mono">${esc(d.email)}</td></tr>
@@ -661,7 +665,7 @@
   }
   const confirmDel = (text, extra) => dialog(t('del'), extra || [], { text: text || t('confirmDel'), ok: t('del'), danger: true });
   const coName = () => t('company').replace(/\s*\(.*\)/, '');
-  const courseOpts = () => [['*', t('allCourses')], ['PC-101', 'PC-101']];
+  const courseOpts = () => [['*', t('allCourses')], ['PC-101', 'PC-101'], ['SS-101', 'SS-101']];
   const dateIn = d => d ? new Date(d).toISOString().slice(0, 10) : '';
   function certData(x) {
     if (x.source === 'online') { const sc = String(x.score).indexOf('/') > 0 ? String(x.score).split('/') : [x.score, x.total]; return { manual: true, name: x.name, courseId: x.course, courseTitle: x.course, type: x.type || 'Completion', date: x.date, score: sc[0], total: sc[1], percent: x.percent, certificateId: x.certificateId }; }
@@ -734,7 +738,7 @@
           <label class="field"><span>${t('codeKind')}</span><select name="mode" class="sel"><option value="shared">${t('codeShared')}</option><option value="single">${t('codeSingle')}</option></select></label>
           <label class="field"><span>${t('seats')}</span><input name="seats" type="number" min="1" max="500" value="5"></label>
           <label class="field"><span>${t('days')}</span><input name="days" type="number" min="1" max="365" value="30"></label>
-          <label class="field"><span>${t('courses')}</span><select name="courses" class="sel"><option value="*">${t('allCourses')}</option><option value="PC-101">PC-101</option></select></label>
+          <label class="field"><span>${t('courses')}</span><select name="courses" class="sel"><option value="*">${t('allCourses')}</option><option value="PC-101">PC-101</option><option value="SS-101">SS-101</option></select></label>
           <label class="field"><span>${t('deadline')} (${t('optional')})</span><input name="validUntil" type="date"></label>
           <label class="field"><span>${t('requestRef')} (${t('optional')})</span><input name="requestRef" maxlength="40" placeholder="TR-…"></label>
           <label class="field"><span>${t('notesLabel')}</span><input name="note" maxlength="300" placeholder="Invoice / PO"></label>
