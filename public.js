@@ -255,7 +255,7 @@
           </div>
           <aside class="lp-partners">
             <a class="plogo" href="https://www.inovex-group.com/" target="_blank" rel="noopener" title="INOVEX Group"><img src="/img/inovex.png" alt="INOVEX Group"></a>
-            <div class="lp-p"><span>${g(P.inAssoc)}</span><a class="plogo" href="https://www.alqemmatraining.com" target="_blank" rel="noopener" title="${esc(g(P.qemName))}"><img src="/img/alqemma.png" alt="${esc(g(P.qemName))}"></a></div>
+            <div class="lp-p"><span>${g(P.inAssoc)}</span><a class="plogo" href="https://alqimahtraining.com/" target="_blank" rel="noopener" title="${esc(g(P.qemName))}"><img src="/img/alqemma.png" alt="${esc(g(P.qemName))}"></a></div>
             <div class="lp-p"><span>${g(P.authorisedBy)}</span><a class="plogo" href="https://www.wagner-group.com/en/" target="_blank" rel="noopener" title="WAGNER Group"><img src="/img/wagner.jpg" alt="WAGNER Group"></a></div>
           </aside>
         </div>
@@ -282,7 +282,7 @@
         </div></section>
       <section class="lp-sec"><h2>${g(P.partnersT)}</h2>
         <div class="lp-plist">
-          <article><a class="plogo" href="https://www.alqemmatraining.com" target="_blank" rel="noopener" title="${esc(g(P.qemName))}"><img src="/img/alqemma.png" alt="${esc(g(P.qemName))}"></a><div><h3><a href="https://www.alqemmatraining.com" target="_blank" rel="noopener">${g(P.qemName)}</a></h3><p>${g(P.qemD)}</p></div></article>
+          <article><a class="plogo" href="https://alqimahtraining.com/" target="_blank" rel="noopener" title="${esc(g(P.qemName))}"><img src="/img/alqemma.png" alt="${esc(g(P.qemName))}"></a><div><h3><a href="https://alqimahtraining.com/" target="_blank" rel="noopener">${g(P.qemName)}</a></h3><p>${g(P.qemD)}</p></div></article>
           <article><a class="plogo" href="https://www.wagner-group.com/en/" target="_blank" rel="noopener" title="WAGNER Group"><img src="/img/wagner.jpg" alt="WAGNER Group"></a><div><h3><a href="https://www.wagner-group.com/en/" target="_blank" rel="noopener">${g(P.wagName)}</a></h3><p>${g(P.wagD)}</p></div></article>
         </div></section>
       <section class="lp-sec lp-faq"><h2>${g(P.faqT)}</h2>${FAQ.map((f, i) => `<details ${i === 0 ? 'open' : ''}><summary>${g(f[0])}</summary><p>${g(f[1])}</p></details>`).join('')}</section>
