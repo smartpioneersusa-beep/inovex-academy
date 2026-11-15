@@ -480,3 +480,7 @@ html[dir=rtl] .lp-ticker-track { animation-name: lpTickRtl }
 .plogo img[src*="wagner"] { height: 54px; max-height: 54px }
 .lp-plist .plogo img[src*="alqemma"] { height: 74px; max-height: 74px }
 .lp-plist .plogo img[src*="wagner"] { height: 58px; max-height: 58px }
+/* logos panel: shrink to the tiles and centre everything */
+.lp-partners { justify-self: center; width: max-content; max-width: 100%; box-sizing: border-box; justify-items: center; text-align: center; padding: 20px 22px }
+.lp-partners .lp-p { justify-items: center }
+.lp-partners .plogo { margin: 0 auto }
