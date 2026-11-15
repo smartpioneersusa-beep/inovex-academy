@@ -5,6 +5,7 @@
   const LANGS = ['en', 'ar', 'ur', 'hi'];
   // L(en, ar, ur, hi)
   const L = (en, ar, ur, hi) => ({ en, ar, ur, hi });
+  const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 
   /* ---------------------------------------------------------------- landing text */
   const P = {
@@ -247,8 +248,8 @@
           </div>
           <aside class="lp-partners">
             <div class="lp-plate"><img src="/img/inovex.png" alt="INOVEX"></div>
-            <div class="lp-p"><span>${g(P.authorisedBy)}</span><img src="/img/wagner.jpg" alt="WAGNER" class="wag"></div>
-            <div class="lp-p"><span>${g(P.inAssoc)}</span><div class="qem"><img src="/img/alqemma.png" alt=""><b>${g(P.qemName)}</b></div></div>
+            <div class="lp-p"><span>${g(P.inAssoc)}</span><a class="plogo" href="https://www.alqemmatraining.com" target="_blank" rel="noopener" title="${esc(g(P.qemName))}"><img src="/img/alqemma.png" alt="${esc(g(P.qemName))}"></a></div>
+            <div class="lp-p"><span>${g(P.authorisedBy)}</span><a class="plogo" href="https://www.wagner-group.com/en/" target="_blank" rel="noopener" title="WAGNER Group"><img src="/img/wagner.jpg" alt="WAGNER Group"></a></div>
           </aside>
         </div>
       </section>
@@ -274,8 +275,8 @@
         </div></section>
       <section class="lp-sec"><h2>${g(P.partnersT)}</h2>
         <div class="lp-plist">
-          <article><img src="/img/wagner.jpg" alt="WAGNER" class="wag"><div><h3>${g(P.wagName)}</h3><p>${g(P.wagD)}</p></div></article>
-          <article><img src="/img/alqemma.png" alt="" class="qlogo"><div><h3>${g(P.qemName)}</h3><p>${g(P.qemD)}</p></div></article>
+          <article><a class="plogo" href="https://www.alqemmatraining.com" target="_blank" rel="noopener" title="${esc(g(P.qemName))}"><img src="/img/alqemma.png" alt="${esc(g(P.qemName))}"></a><div><h3><a href="https://www.alqemmatraining.com" target="_blank" rel="noopener">${g(P.qemName)}</a></h3><p>${g(P.qemD)}</p></div></article>
+          <article><a class="plogo" href="https://www.wagner-group.com/en/" target="_blank" rel="noopener" title="WAGNER Group"><img src="/img/wagner.jpg" alt="WAGNER Group"></a><div><h3><a href="https://www.wagner-group.com/en/" target="_blank" rel="noopener">${g(P.wagName)}</a></h3><p>${g(P.wagD)}</p></div></article>
         </div></section>
       <section class="lp-sec lp-faq"><h2>${g(P.faqT)}</h2>${FAQ.map((f, i) => `<details ${i === 0 ? 'open' : ''}><summary>${g(f[0])}</summary><p>${g(f[1])}</p></details>`).join('')}</section>
       <section class="lp-band"><div><h2>${g(P.bandT)}</h2><p>${g(P.bandD)}</p></div>

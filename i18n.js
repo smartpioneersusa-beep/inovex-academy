@@ -241,3 +241,31 @@ window.I18N = {
     lastActivity: "अंतिम गतिविधि", avgProgress: "औसत प्रगति", noCerts: "अभी कोई प्रमाणपत्र नहीं।", viewAs: "कंपनी देखें", refsHint: "अनुरोध संख्या (TR-…), कॉमा से अलग",
     e_admin_domain: "केवल @inovex-group.com ईमेल वाले एडमिन बन सकते हैं।", e_cant_remove: "यह खाता हटाया नहीं जा सकता।", e_exists: "यह नाम पहले से उपयोग में है।" }
 });
+
+/* company seats: managers enrol their own trainees */
+(function (add) { Object.keys(add).forEach(l => Object.assign(window.I18N[l], add[l])); })({
+  en: { addTrainees: "Add trainees", addTrainee: "Add", addTraineesD: "Enter each trainee's name and email. They receive an invitation; their access starts when they activate their account.",
+    seatsFree: "free seats", noSeats: "All seats are filled. Contact INOVEX to add seats.", pasteList: "Paste a list (one trainee per line: name, email — you can copy from Excel)",
+    invited: "Invited", resend: "Resend invite", freeSeat: "Their seat becomes free again.", addedOk: "{n} trainee(s) added — invitations sent.", alreadyIn: "Already in your team",
+    addSeats: "Add seats", addSeatsD: "The company manager fills these seats by adding trainees in the company dashboard.",
+    activateT: "Activate your account", activateD: "Your company enrolled you. Create a password to start the course; your access period starts today.",
+    e_seats_full: "Not enough free seats. Contact INOVEX to add seats.", e_trainee_invalid: "Each trainee needs a full name and a valid email.", e_in_use: "This trainee has already started, so the seat can't be freed. Contact INOVEX." },
+  ar: { addTrainees: "إضافة متدربين", addTrainee: "إضافة", addTraineesD: "أدخل اسم كل متدرب وبريده الإلكتروني. تصله دعوة، وتبدأ مدة وصوله عند تفعيل حسابه.",
+    seatsFree: "مقاعد متاحة", noSeats: "تم شغل جميع المقاعد. تواصل مع INOVEX لإضافة مقاعد.", pasteList: "الصق قائمة (متدرب في كل سطر: الاسم، البريد — يمكن النسخ من Excel)",
+    invited: "تمت دعوته", resend: "إعادة إرسال الدعوة", freeSeat: "سيصبح مقعده متاحاً من جديد.", addedOk: "تمت إضافة {n} متدرب — أُرسلت الدعوات.", alreadyIn: "موجود في فريقك",
+    addSeats: "إضافة مقاعد", addSeatsD: "يملأ مدير الشركة هذه المقاعد بإضافة المتدربين من لوحة الشركة.",
+    activateT: "تفعيل حسابك", activateD: "قامت شركتك بتسجيلك. أنشئ كلمة مرور لبدء الدورة؛ تبدأ مدة الوصول من اليوم.",
+    e_seats_full: "لا توجد مقاعد كافية. تواصل مع INOVEX لإضافة مقاعد.", e_trainee_invalid: "يلزم لكل متدرب اسم كامل وبريد إلكتروني صحيح.", e_in_use: "بدأ هذا المتدرب الدورة، لذا لا يمكن تحرير مقعده. تواصل مع INOVEX." },
+  ur: { addTrainees: "ٹرینیز شامل کریں", addTrainee: "شامل کریں", addTraineesD: "ہر ٹرینی کا نام اور ای میل درج کریں۔ انہیں دعوت نامہ ملے گا؛ رسائی اکاؤنٹ فعال کرنے پر شروع ہوگی۔",
+    seatsFree: "خالی نشستیں", noSeats: "تمام نشستیں پُر ہو چکی ہیں۔ مزید نشستوں کے لیے INOVEX سے رابطہ کریں۔", pasteList: "فہرست پیسٹ کریں (ہر سطر میں ایک ٹرینی: نام، ای میل — Excel سے کاپی کر سکتے ہیں)",
+    invited: "مدعو", resend: "دعوت دوبارہ بھیجیں", freeSeat: "ان کی نشست دوبارہ خالی ہو جائے گی۔", addedOk: "{n} ٹرینی شامل — دعوت نامے بھیج دیے گئے۔", alreadyIn: "پہلے سے آپ کی ٹیم میں",
+    addSeats: "نشستیں شامل کریں", addSeatsD: "کمپنی مینیجر کمپنی ڈیش بورڈ سے ٹرینیز شامل کر کے یہ نشستیں پُر کرتا ہے۔",
+    activateT: "اپنا اکاؤنٹ فعال کریں", activateD: "آپ کی کمپنی نے آپ کو رجسٹر کیا ہے۔ کورس شروع کرنے کے لیے پاس ورڈ بنائیں؛ رسائی آج سے شروع ہوگی۔",
+    e_seats_full: "کافی خالی نشستیں نہیں۔ مزید نشستوں کے لیے INOVEX سے رابطہ کریں۔", e_trainee_invalid: "ہر ٹرینی کے لیے پورا نام اور درست ای میل ضروری ہے۔", e_in_use: "یہ ٹرینی کورس شروع کر چکا ہے، اس لیے نشست خالی نہیں کی جا سکتی۔ INOVEX سے رابطہ کریں۔" },
+  hi: { addTrainees: "प्रशिक्षु जोड़ें", addTrainee: "जोड़ें", addTraineesD: "हर प्रशिक्षु का नाम और ईमेल दर्ज करें। उन्हें आमंत्रण मिलेगा; खाता सक्रिय करने पर उनकी एक्सेस अवधि शुरू होगी।",
+    seatsFree: "खाली सीटें", noSeats: "सभी सीटें भर गई हैं। और सीटों के लिए INOVEX से संपर्क करें।", pasteList: "सूची पेस्ट करें (हर पंक्ति में एक प्रशिक्षु: नाम, ईमेल — Excel से कॉपी कर सकते हैं)",
+    invited: "आमंत्रित", resend: "आमंत्रण फिर भेजें", freeSeat: "उनकी सीट फिर से खाली हो जाएगी।", addedOk: "{n} प्रशिक्षु जोड़े गए — आमंत्रण भेजे गए।", alreadyIn: "पहले से आपकी टीम में",
+    addSeats: "सीटें जोड़ें", addSeatsD: "कंपनी मैनेजर कंपनी डैशबोर्ड में प्रशिक्षु जोड़कर ये सीटें भरता है।",
+    activateT: "अपना खाता सक्रिय करें", activateD: "आपकी कंपनी ने आपको नामांकित किया है। कोर्स शुरू करने के लिए पासवर्ड बनाएँ; आपकी एक्सेस आज से शुरू होगी।",
+    e_seats_full: "पर्याप्त खाली सीटें नहीं हैं। और सीटों के लिए INOVEX से संपर्क करें।", e_trainee_invalid: "हर प्रशिक्षु के लिए पूरा नाम और सही ईमेल ज़रूरी है।", e_in_use: "यह प्रशिक्षु कोर्स शुरू कर चुका है, इसलिए सीट खाली नहीं की जा सकती। INOVEX से संपर्क करें।" }
+});

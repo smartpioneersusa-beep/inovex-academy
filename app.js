@@ -137,7 +137,7 @@
       if (p[0] === 'admin-login') return viewAdminLogin();
       if (p[0] === 'manager-login') return viewAdminLogin(true);
       if (!S.token) {
-        if (p[0] === 'signup') return viewSignup();
+        if (p[0] === 'signup') return viewSignup(p[1] ? decodeURIComponent(p[1]) : '');
         if (p[0] === 'verify') return viewVerify();
         if (p[0] === 'forgot') return viewForgot();
         if (p[0] === 'reset') return viewReset();
@@ -217,14 +217,15 @@
       <div class="links" style="margin-top:6px"><a href="#/manager-login">${t('managerLink')}</a></div></div>`);
     bindLogin();
   }
-  function viewSignup() {
-    view(`<div class="card auth"><h2>${t('createAccount')}</h2><p class="hint">${t('accessNote')}</p>${msgBox()}
+  function viewSignup(invited) {
+    invited = /^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(invited || '') ? invited : '';
+    view(`<div class="card auth"><h2>${invited ? t('activateT') : t('createAccount')}</h2><p class="hint">${invited ? t('activateD') : t('accessNote')}</p>${msgBox()}
       <form id="sf"><label class="field"><span>${t('fullName')}</span><input name="name" required maxlength="80" autocomplete="name"></label>
-      <label class="field"><span>${t('email')}</span><input name="email" type="email" required dir="ltr" autocomplete="email"></label>
+      <label class="field"><span>${t('email')}</span><input name="email" type="email" required dir="ltr" autocomplete="email" value="${esc(invited)}" ${invited ? 'readonly' : ''}></label>
       <label class="field"><span>${t('password')}</span><input name="password" type="password" required minlength="8" dir="ltr" autocomplete="new-password"><div class="hint">${t('pwRule')}</div></label>
       <label class="field"><span>${t('company')}</span><input name="company" maxlength="80" autocomplete="organization"></label>
       <label class="field"><span>${t('phone')}</span><input name="phone" type="tel" maxlength="30" dir="ltr" autocomplete="tel"></label>
-      <label class="field"><span>${t('accessCode')}</span><input name="accessCode" class="mono" dir="ltr" maxlength="20" placeholder="INX-XXXX-XXXX" style="text-transform:uppercase"><div class="hint">${t('accessCodeHint')}</div></label>
+      <label class="field ${invited ? 'hidden' : ''}"><span>${t('accessCode')}</span><input name="accessCode" class="mono" dir="ltr" maxlength="20" placeholder="INX-XXXX-XXXX" style="text-transform:uppercase"><div class="hint">${t('accessCodeHint')}</div></label>
       <button class="btn gold" style="width:100%">${t('createAccount')}</button></form>
       <div class="links"><span>${t('haveAccount')}</span><a href="#/login">${t('signIn')}</a></div></div>`);
     $('#sf').onsubmit = async e => {
@@ -845,10 +846,18 @@
           { name: 'phone', label: t('phone').replace(/\s*\(.*\)/, ''), value: x.phone, ltr: true }, { name: 'requestRef', label: t('requestRef'), value: x.requestRef, ltr: true, hint: t('refsHint') },
           { name: 'status', label: t('status'), type: 'select', value: x.status || 'active', options: [['active', t('active')], ['disabled', t('disabled')]] },
           { name: 'note', label: t('notesLabel'), value: x.note }];
-        $('#tb').innerHTML = `<p><button class="btn small gold" id="addco">＋ ${t('addCompany')}</button></p><table class="table"><tr><th>${coName()}</th><th>${t('manager')}</th><th>${t('requestRef')}</th><th>${t('codesTab')}</th><th>${t('trainees')}</th><th>${t('status')}</th><th></th></tr>` +
+        $('#tb').innerHTML = `<p><button class="btn small gold" id="addco">＋ ${t('addCompany')}</button></p><table class="table"><tr><th>${coName()}</th><th>${t('manager')}</th><th>${t('requestRef')}</th><th>${t('seatsUsed')}</th><th>${t('trainees')}</th><th>${t('status')}</th><th></th></tr>` +
           rows.map((x, i) => `<tr><td><b>${esc(x.company)}</b>${x.note ? `<div class="hint">${esc(x.note)}</div>` : ''}</td><td>${esc(x.managerName || '')}<div class="mono hint">${esc(x.managerEmail)}</div></td><td class="mono">${esc(x.requestRef || '')}</td>
-            <td class="mono">${x.codes} · ${x.seats} ${t('seats').toLowerCase()}</td><td class="mono">${x.trainees}</td><td><span class="pill ${x.status === 'disabled' ? 'bad' : 'ok'}">${x.status === 'disabled' ? t('disabled') : t('active')}</span></td>
-            <td class="acts"><a class="btn small gold" href="#/manager/${encodeURIComponent(x.company)}">${t('dashboard')}</a> <button ${ED} data-ed="${i}">${t('edit')}</button> <button ${DL} data-del="${i}">${t('del')}</button></td></tr>`).join('') + `</table>`;
+            <td class="mono">${x.used || 0}/${x.seats}<div class="hint">${x.codes} ${t('codesTab').toLowerCase()}</div></td><td class="mono">${x.trainees}</td><td><span class="pill ${x.status === 'disabled' ? 'bad' : 'ok'}">${x.status === 'disabled' ? t('disabled') : t('active')}</span></td>
+            <td class="acts"><button class="btn small gold" data-seat="${i}">＋ ${t('addSeats')}</button> <a class="btn small ghost" href="#/manager/${encodeURIComponent(x.company)}">${t('dashboard')}</a> <button ${ED} data-ed="${i}">${t('edit')}</button> <button ${DL} data-del="${i}">${t('del')}</button></td></tr>`).join('') + `</table>`;
+        on('[data-seat]', async b => {
+          const x = rows[b.dataset.seat];
+          const v = await dialog(t('addSeats') + ' — ' + x.company, [
+            { name: 'seats', label: t('seats'), type: 'number', min: 1, max: 500, value: 5, required: true },
+            { name: 'days', label: t('days'), type: 'number', min: 1, max: 365, value: 30 }, { name: 'courses', label: t('courses'), type: 'select', value: '*', options: courseOpts() }
+          ], { text: t('addSeatsD'), submit: v => api('adminAddSeats', Object.assign({ company: x.company }, v)) });
+          if (v) reload(t('saved'));
+        });
         $('#addco').onclick = async () => { const v = await dialog(t('addCompany'), form({}), { submit: v => api('adminSaveCompany', v) }); if (v) reload(t('saved')); };
         on('[data-ed]', async b => { const x = rows[b.dataset.ed]; const v = await dialog(t('edit') + ' — ' + x.company, form(x), { submit: v => api('adminSaveCompany', Object.assign({ original: x.company }, v)) }); if (v) reload(t('saved')); });
         on('[data-del]', async b => { const x = rows[b.dataset.del]; if (await confirmDel(`${t('confirmDel')} ${x.company}`)) act(b, 'adminDeleteCompany', { company: x.company }); });
@@ -898,10 +907,16 @@
     view(`<p>${t('loading')}</p>`);
     const d = await api('managerDashboard', company ? { company: company } : {});
     const tr = d.trainees, certs = d.certificates, codes = d.codes, M = d.modulesTotal || 8, now = Date.now();
-    const seats = codes.reduce((a, k) => a + k.seats, 0), used = codes.reduce((a, k) => a + k.used, 0);
+    const seats = d.seats ? d.seats.total : codes.reduce((a, k) => a + k.seats, 0), used = d.seats ? d.seats.used : codes.reduce((a, k) => a + k.used, 0), free = d.seats ? d.seats.free : seats - used;
+    const coArg = S.user.admin || d.companies.length > 1 ? { company: d.company.company } : {};
     const pct = x => Math.round(((x.modulesOpened + (x.presentation ? 1 : 0) + (x.best && x.best.passed ? 1 : 0)) / (M + 2)) * 100);
     const avg = tr.length ? Math.round(tr.reduce((a, x) => a + pct(x), 0) / tr.length) : 0;
-    const st = x => x.status === 'disabled' ? 'disabled' : x.status === 'deleted' ? 'disabled' : !x.expires ? 'awaiting' : new Date(x.expires) < now ? 'expired' : 'active';
+    const st = x => x.invited ? 'invited' : x.status === 'disabled' ? 'disabled' : x.status === 'deleted' ? 'disabled' : !x.expires ? 'awaiting' : new Date(x.expires) < now ? 'expired' : 'active';
+    const addCard = `<div class="card seatcard"><div class="seathead"><div><h2 style="margin:0">${t('addTrainees')}</h2><p class="hint" style="margin:4px 0 0">${t('addTraineesD')}</p></div>
+        <div class="seatnum ${free ? '' : 'none'}"><b>${free}</b><span>${t('seatsFree')}</span></div></div>
+      ${free ? `<form id="atf" class="addrow"><input name="name" required minlength="2" maxlength="80" placeholder="${esc(t('fullName'))}" autocomplete="off"><input name="email" type="email" required dir="ltr" placeholder="${esc(t('email').replace(/\s*\(.*\)/, ''))}" autocomplete="off"><button class="btn gold">＋ ${t('addTrainee')}</button></form>
+      <details class="paste"><summary>${t('pasteList')}</summary><textarea id="atl" rows="5" dir="auto" placeholder="Ahmed Ali, ahmed@company.com&#10;Omar Saleh, omar@company.com"></textarea><button class="btn small dark" id="atlb">${t('addTrainees')}</button></details>`
+        : `<p class="msg err" style="margin:10px 0 0">${t('noSeats')}</p>`}</div>`;
     const certOf = id => certs.filter(c => c.certificateId === id)[0];
     const switcher = S.user.admin || d.companies.length > 1
       ? `<label class="field" style="max-width:340px"><span>${t('viewAs')}</span>${S.user.admin ? `<input id="cosel" list="cos" value="${esc(d.company.company)}"><datalist id="cos">${d.companies.map(c => `<option value="${esc(c)}">`).join('')}</datalist>` : `<select id="cosel" class="sel">${d.companies.map(c => `<option ${c === d.company.company ? 'selected' : ''}>${esc(c)}</option>`).join('')}</select>`}</label>` : '';
@@ -910,10 +925,12 @@
       <div class="kpis"><div class="kpi"><b>${tr.length}</b><span>${t('trainees')}</span></div><div class="kpi"><b>${used}/${seats}</b><span>${t('seatsUsed')}</span></div>
       <div class="kpi"><b>${avg}%</b><span>${t('avgProgress')}</span></div><div class="kpi"><b>${tr.filter(x => x.best && x.best.passed).length}</b><span>${t('passed')}</span></div>
       <div class="kpi"><b>${certs.length}</b><span>${t('certificates')}</span></div></div>
+      ${addCard}
       <div class="toolbar"><h2 style="margin:0;flex:1">${t('teamProgress')}</h2><button class="btn small dark" id="mcsv">${t('exportCsv')}</button></div>
       <div class="tablewrap">${tr.length ? `<table class="table"><tr><th>${t('fullName')}</th><th>${t('status')}</th><th>${t('progress')}</th><th>${t('best')}</th><th>${t('lastActivity')}</th><th>${t('certificates')}</th></tr>` +
         tr.map(x => { const s = st(x); return `<tr><td>${esc(x.name || '—')}<div class="mono hint">${esc(x.email)}</div></td>
-          <td><span class="pill ${s === 'active' ? 'ok' : 'bad'}">${t(s)}</span>${x.expires ? `<div class="hint">${t('expires')}: ${fmtDate(x.expires)}</div>` : ''}</td>
+          <td><span class="pill ${s === 'active' ? 'ok' : s === 'invited' ? 'gold' : 'bad'}">${t(s)}</span>${x.expires ? `<div class="hint">${t('expires')}: ${fmtDate(x.expires)}</div>` : ''}
+            ${x.invited ? `<div class="acts" style="margin-top:6px"><button class="btn small ghost" data-resend="${esc(x.email)}">${t('resend')}</button> <button class="btn small danger" data-rmt="${esc(x.email)}">${t('remove')}</button></div>` : ''}</td>
           <td style="min-width:170px"><div class="bar"><i style="width:${pct(x)}%"></i></div><div class="hint">${t('modules')} <span class="mono" dir="ltr">${x.modulesOpened}/${M}</span>${x.presentation ? ' · ▶' : ''} · <span class="mono" dir="ltr">${pct(x)}%</span></div></td>
           <td class="mono">${x.best ? `${x.best.score}/${x.best.total} (${x.best.percent}%) ${x.best.passed ? '✓' : ''}` : '—'} <span class="hint">×${x.attempts}</span></td>
           <td>${x.lastActivity ? fmtDate(x.lastActivity) : '—'}</td>
@@ -930,6 +947,25 @@
     app.querySelectorAll('[data-mprint]').forEach(b => b.onclick = () => run('print')(b));
     const all = mode => async e => { const b = e.target; busy(b, true); try { await certificatePdf(certs.map(certData), mode); } finally { busy(b, false); } };
     if ($('#mall')) { $('#mall').onclick = all(); $('#mallp').onclick = all('print'); }
+    const parse = txt => txt.split(/\r?\n/).map(l => l.trim()).filter(Boolean).map(l => {
+      const m = l.match(/[^\s,;\t<>]+@[^\s,;\t<>]+/); const email = m ? m[0] : '';
+      return { email: email, name: l.replace(email, '').replace(/[<>]/g, '').replace(/^[\s,;\t]+|[\s,;\t]+$/g, '').replace(/\s*[,;\t]\s*/g, ' ') };
+    });
+    const addMany = async (list, b) => {
+      if (!list.length) return;
+      busy(b, true);
+      try { const r = await api('managerAddTrainees', Object.assign({ trainees: list, lang: S.lang }, coArg)); S.flash = { ok: t('addedOk', { n: r.added.length }) + (r.skipped.length ? ' · ' + t('alreadyIn') + ': ' + r.skipped.join(', ') : '') }; viewManager(company); }
+      catch (e) { alertless(errText(e)); busy(b, false); }
+    };
+    if ($('#atf')) {
+      $('#atf').onsubmit = e => { e.preventDefault(); const f = e.target; addMany([{ name: f.name.value.trim(), email: f.email.value.trim().toLowerCase() }], f.querySelector('button')); };
+      $('#atlb').onclick = e => { e.preventDefault(); const list = parse($('#atl').value); if (list.some(x => !x.email || x.name.length < 2)) return alertless(t('e_trainee_invalid')); addMany(list, e.target); };
+    }
+    app.querySelectorAll('[data-resend]').forEach(b => b.onclick = async () => { busy(b, true); try { await api('managerResendInvite', Object.assign({ email: b.dataset.resend }, coArg)); b.textContent = '✓'; } catch (e) { alertless(errText(e)); busy(b, false); } });
+    app.querySelectorAll('[data-rmt]').forEach(b => b.onclick = async () => {
+      if (!(await confirmDel(`${t('remove')} ${b.dataset.rmt}? ${t('freeSeat')}`))) return;
+      busy(b, true); try { await api('managerRemoveTrainee', Object.assign({ email: b.dataset.rmt }, coArg)); S.flash = { ok: t('saved') }; viewManager(company); } catch (e) { alertless(errText(e)); busy(b, false); }
+    });
     const sel = $('#cosel'); if (sel) sel.onchange = () => go('/manager/' + encodeURIComponent(sel.value));
     $('#mcsv').onclick = () => downloadCsv([['name', 'email', 'status', 'expires', 'modulesOpened', 'presentation', 'progressPercent', 'attempts', 'bestScore', 'bestPercent', 'passed', 'lastActivity', 'certificates']]
       .concat(tr.map(x => [x.name, x.email, st(x), x.expires, x.modulesOpened, x.presentation, pct(x), x.attempts, x.best ? x.best.score + '/' + x.best.total : '', x.best ? x.best.percent : '', x.best ? x.best.passed : '', x.lastActivity, x.certificates.join(' ')])),
