@@ -472,3 +472,11 @@ html[lang=ar] .lp-ticker span, html[lang=ur] .lp-ticker span { letter-spacing: 0
 html[dir=rtl] .lp-ticker-track { animation-name: lpTickRtl }
 @keyframes lpTickRtl { from { transform: translateX(0) } to { transform: translateX(50%) } }
 @media (prefers-reduced-motion: reduce) { .lp-ticker-track { animation-duration: 90s } }
+.lp-partners .plogo { width: 260px; max-width: 100%; height: 84px }   /* INOVEX, Al Qemma and WAGNER: identical tiles */
+.lp-partners .plogo img { max-height: 56px; max-width: 200px }
+/* balance the three logos optically (similar visual area inside identical tiles) */
+.plogo img[src*="inovex"] { width: 200px; max-height: none }
+.plogo img[src*="alqemma"] { height: 68px; max-height: 68px }
+.plogo img[src*="wagner"] { height: 54px; max-height: 54px }
+.lp-plist .plogo img[src*="alqemma"] { height: 74px; max-height: 74px }
+.lp-plist .plogo img[src*="wagner"] { height: 58px; max-height: 58px }

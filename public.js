@@ -254,7 +254,7 @@
             <div class="lp-motto">${g(P.motto)}</div>
           </div>
           <aside class="lp-partners">
-            <div class="lp-plate"><img src="/img/inovex.png" alt="INOVEX"></div>
+            <a class="plogo" href="https://www.inovex-group.com/" target="_blank" rel="noopener" title="INOVEX Group"><img src="/img/inovex.png" alt="INOVEX Group"></a>
             <div class="lp-p"><span>${g(P.inAssoc)}</span><a class="plogo" href="https://www.alqemmatraining.com" target="_blank" rel="noopener" title="${esc(g(P.qemName))}"><img src="/img/alqemma.png" alt="${esc(g(P.qemName))}"></a></div>
             <div class="lp-p"><span>${g(P.authorisedBy)}</span><a class="plogo" href="https://www.wagner-group.com/en/" target="_blank" rel="noopener" title="WAGNER Group"><img src="/img/wagner.jpg" alt="WAGNER Group"></a></div>
           </aside>
