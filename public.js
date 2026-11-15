@@ -65,6 +65,10 @@
     pc101d: L('8 modules · 25-slide presentation · 30-question assessment · certificate', '8 وحدات · عرض من 25 شريحة · تقييم من 30 سؤالاً · شهادة', '8 ماڈیول · 25 سلائیڈز · 30 سوالات · سرٹیفکیٹ', '8 मॉड्यूल · 25 स्लाइड · 30 प्रश्न · प्रमाणपत्र'),
     more: L('More courses are on the way', 'دورات أخرى قيد الإعداد', 'مزید کورس تیار ہو رہے ہیں', 'और कोर्स आ रहे हैं'),
     moreD: L('Liquid painting, surface preparation, spray guns and pumps, automation, maintenance.', 'الطلاء السائل، تجهيز الأسطح، مسدسات الرش والمضخات، الأتمتة، الصيانة.', 'مائع پینٹنگ، سطح کی تیاری، اسپرے گن اور پمپ، آٹومیشن، مرمت۔', 'लिक्विड पेंटिंग, सतह तैयारी, स्प्रे गन और पंप, ऑटोमेशन, रखरखाव।'),
+    ticker: [L('INOVEX — KSA', 'INOVEX — المملكة العربية السعودية', 'INOVEX — سعودی عرب', 'INOVEX — सऊदी अरब'),
+      L('Al Qemma Institute — KSA', 'معهد القمة — المملكة العربية السعودية', 'القمہ انسٹی ٹیوٹ — سعودی عرب', 'अल क़िम्मा इंस्टीट्यूट — सऊदी अरब'),
+      L('WAGNER Group — Germany / Italy', 'مجموعة WAGNER — ألمانيا / إيطاليا', 'WAGNER گروپ — جرمنی / اٹلی', 'WAGNER ग्रुप — जर्मनी / इटली'),
+      L('Saudi Vision 2030', 'رؤية السعودية 2030', 'سعودی ویژن 2030', 'सऊदी विज़न 2030')],
     partnersT: L('Our partners', 'شركاؤنا', 'ہمارے شراکت دار', 'हमारे साझेदार'),
     wagD: L('INOVEX is the authorised WAGNER reseller in the GCC and Middle East. Our courses are authorised by Wagner Group, and WAGNER equipment training is delivered through INOVEX Academy by trained INOVEX engineers.',
       'INOVEX هي الموزع المعتمد لـ WAGNER في الخليج والشرق الأوسط. دوراتنا معتمدة من مجموعة Wagner، ويُقدَّم التدريب على معدات WAGNER عبر أكاديمية INOVEX بواسطة مهندسين مدرّبين.',
@@ -235,7 +239,10 @@
       ? `<iframe src="https://www.youtube-nocookie.com/embed/${ESC(v.youtube)}?rel=0" title="${ESC(g(v.title))}" loading="lazy" allow="accelerometer; encrypted-media; picture-in-picture; fullscreen" allowfullscreen></iframe>`
       : `<video src="${ESC(v.src)}" ${v.poster ? `poster="${ESC(v.poster)}"` : ''} controls preload="none" playsinline></video>`}<figcaption>${ESC(g(v.title))}</figcaption></figure>`).join('')
       : [1, 2, 3].map(i => `<figure class="vid soon"><div><span>▶</span>${g(P.soon)}</div><figcaption>&nbsp;</figcaption></figure>`).join('');
+    const once = P.ticker.map(x => `<span>${ESC(g(x))}</span><i aria-hidden="true">◆</i>`).join('');
+    const tick = once + once;   // each half must be wider than the widest screen for a seamless loop
     h.view(`
+      <div class="lp-ticker" role="marquee" aria-label="${ESC(P.ticker.map(g).join(' · '))}"><div class="lp-ticker-track"><div>${tick}</div><div aria-hidden="true">${tick}</div></div></div>
       <section class="lp-hero">
         <div class="lp-hero-in">
           <div class="lp-copy">

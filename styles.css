@@ -459,3 +459,16 @@ html, body { overflow-x: hidden }
 .paste { margin-top: 10px } .paste summary { cursor: pointer; color: var(--gold-d); font-weight: 600; font-size: 14px }
 .paste textarea { margin: 8px 0 }
 @media (max-width: 640px) { .addrow { grid-template-columns: 1fr } }
+
+/* thin moving banner above the home page hero */
+.lp-ticker { overflow: hidden; background: linear-gradient(90deg, #F2C94C, #E2C877 50%, #F2C94C); color: #1C1C1C; border-radius: 8px; margin: 0 0 14px; height: 34px; display: flex; align-items: center; box-shadow: inset 0 -1px 0 rgba(0,0,0,.08) }
+.lp-ticker-track { display: flex; width: max-content; animation: lpTick 32s linear infinite }
+.lp-ticker-track > div { display: flex; align-items: center; flex: none; white-space: nowrap }
+.lp-ticker span { font-family: var(--head); font-weight: 600; font-size: 14px; letter-spacing: .06em; text-transform: uppercase; padding: 0 22px }
+html[lang=ar] .lp-ticker span, html[lang=ur] .lp-ticker span { letter-spacing: 0; font-size: 15px; text-transform: none }
+.lp-ticker i { font-style: normal; font-size: 9px; color: #7A5F12 }
+.lp-ticker:hover .lp-ticker-track { animation-play-state: paused }
+@keyframes lpTick { from { transform: translateX(0) } to { transform: translateX(-50%) } }
+html[dir=rtl] .lp-ticker-track { animation-name: lpTickRtl }
+@keyframes lpTickRtl { from { transform: translateX(0) } to { transform: translateX(50%) } }
+@media (prefers-reduced-motion: reduce) { .lp-ticker-track { animation-duration: 90s } }
